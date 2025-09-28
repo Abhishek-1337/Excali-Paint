@@ -11,6 +11,8 @@
   "keywords": [],
   "dependencies": {
     "@repo/typescript-config": "workspace:*",
+    "@repo/backend-common": "workspace:*",
+    "@repo/common": "workspace:*",
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2"
   },

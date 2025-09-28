@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt, { JwtPayload } from 'jsonwebtoken';
-import { JWT_SECRET } from '../config';
+import { JWT_SECRET } from "@repo/backend-common/config";
 import { AuthRequest } from '../types';
 
 export const protect = async (req: AuthRequest, res: Response, next: NextFunction) => {
