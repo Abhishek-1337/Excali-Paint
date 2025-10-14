@@ -20,8 +20,7 @@ model User {
   email String  @unique
   password  String
   messages Message[]
-  roomId    String?
-  room      Room?     @relation("RoomMembers", fields: [roomId], references: [id])
+  room      Room[]     @relation("RoomMembers")
   adminOf   Room[]    @relation("RoomAdmin")
 }
 

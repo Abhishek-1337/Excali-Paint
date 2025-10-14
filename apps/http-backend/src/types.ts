@@ -1,7 +1,5 @@
 import { Request } from 'express';
 
-type Custom = {
-    userId: string;
+export interface AuthRequest extends Request {
+    userId?: string;
 }
-
-export type AuthRequest = Custom & Request;
