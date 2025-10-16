@@ -20,7 +20,7 @@ app.post("/signup", async (req, res) => {
         return;
     }
 
-    const { username, email, password} = result.data;
+    const { name, email, password} = result.data;
 
     const checkUser = await prismaClient.user.findFirst({
         where: {
@@ -36,11 +36,12 @@ app.post("/signup", async (req, res) => {
     }
 
     const hashedPassword = await bcrypt.hash(password as string, 10)
-    const user = prismaClient.user.create({
-        data: { username, email, hashedPassword }
+    const user = await prismaClient.user.create({
+        data: { name, email, password:hashedPassword }
     });
+    console.log(user);
 
-    const token = jwt.sign({id: user.Id}, JWT_SECRET);
+    const token = jwt.sign({userId: user.id}, JWT_SECRET);
 
     res.status(201).json({
         message: "User is successfully created.",
@@ -56,28 +57,27 @@ app.post("/signin", (req, res) => {
     });
 })
 
-app.get("/create-room", protect, async (req: AuthRequest, res) => {
-    const result = CreateRoomSchema.safeParse(req.body);
-    if(!result.success) {
-        res.status(400).json({
-            message: "Invalid input."
-        });
-        return;
-    }
+// app.get("/create-room", protect, async (req: AuthRequest, res) => {
+//     const result = CreateRoomSchema.safeParse(req.body);
+//     if(!result.success) {
+//         res.status(400).json({
+//             message: "Invalid input."
+//         });
+//         return;
+//     }
 
-    const { name } = result.data;
-    const userId = req.userId;
-    await prismaClient.room.create({
-        data: {
-            slug: name,
-            adminId: userId
-        }
-    });
+//     const { name } = result.data;
+//     const userId = req.userId;
+//     await prismaClient.room.create({
+//         data: {
+//             adminId: userId
+//         }
+//     });
 
-    res.status(201).json({
-        message: "Room is created"
-    });
-})
+//     res.status(201).json({
+//         message: "Room is created"
+//     });
+// })
 
 
 app.listen(3000);

@@ -30,6 +30,7 @@ wss.on('connection', async function connection(ws, request) {
   const decoded = await jwt.verify(token, JWT_SECRET);
   const userId = (decoded as JwtPayload).userId;
   if(!decoded || !userId){
+    console.log("still")
     ws.close();
     return;
   }
@@ -44,7 +45,7 @@ wss.on('connection', async function connection(ws, request) {
   ws.on('message', function message(data) {
     console.log('received: %s', data);
     const parsedData = JSON.parse(data.toString());
-    switch (parsedData) {
+    switch (parsedData.type) {
       case "join-room": const joinRoom = () => {
         const user = userRoom.find((ur) => ur.userId == userId);
         user?.rooms.push(parsedData.roomId);
