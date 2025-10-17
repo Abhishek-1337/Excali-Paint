@@ -55,6 +55,22 @@ app.post("/signin", (req, res) => {
     res.status(200).json({
         token
     });
+});
+
+app.get("/room/:slug", async (req, res) => {
+    const slug: string = req.params.slug;
+    const room = await prismaClient.room.findFirst({
+        where: {slug} as any
+    });
+
+    console.log(room);
+
+    if (!room) {
+        res.status(404).json({ message: "Room not found" });
+        return;
+    }
+
+    res.status(200).json(room);
 })
 
 // app.get("/create-room", protect, async (req: AuthRequest, res) => {
