@@ -3,7 +3,7 @@ import axios from 'axios';
 const getRoom = async (slug: string) => {
     let response;
     try {
-        response = await axios.get(`ws://localhost:8080/room/${slug}`);
+        response = await axios.get(`http://localhost:3001/room/${slug}`);
         console.log(response);
     }
     catch(err) {
@@ -11,7 +11,7 @@ const getRoom = async (slug: string) => {
     }
 }
 
-const ChatRoom = async ({
+ const ChatRoom = async ({
     params
 }: {
     params: Promise<{slug: string}>
@@ -19,9 +19,13 @@ const ChatRoom = async ({
     const awaitedParams = await params;
     const slug = awaitedParams.slug;
 
+    await getRoom(slug);
+
     return (
         <>
         <h2>RoomId: </h2>
         </>
     );
 }
+
+export default ChatRoom;

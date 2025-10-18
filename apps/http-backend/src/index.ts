@@ -73,27 +73,35 @@ app.get("/room/:slug", async (req, res) => {
     res.status(200).json(room);
 })
 
-// app.get("/create-room", protect, async (req: AuthRequest, res) => {
-//     const result = CreateRoomSchema.safeParse(req.body);
-//     if(!result.success) {
-//         res.status(400).json({
-//             message: "Invalid input."
-//         });
-//         return;
-//     }
+app.post("/create-room", protect, async (req: AuthRequest, res) => {
+    const result = CreateRoomSchema.safeParse(req.body);
+    if(!result.success) {
+        res.status(400).json({
+            message: "Invalid input."
+        });
+        return;
+    }
 
-//     const { name } = result.data;
-//     const userId = req.userId;
-//     await prismaClient.room.create({
-//         data: {
-//             adminId: userId
-//         }
-//     });
+    const { slug } = result.data;
+    const userId = req.userId;
 
-//     res.status(201).json({
-//         message: "Room is created"
-//     });
-// })
+    if(!userId) {
+        res.status(403).json({
+            message: "Invalid token"
+        });
+        return;
+    }
+    await prismaClient.room.create({
+        data: {
+            slug,
+            adminId: userId
+        }
+    });
+
+    res.status(201).json({
+        message: "Room is created"
+    });
+})
 
 
-app.listen(3000);
+app.listen(3001);
