@@ -5,7 +5,7 @@ import { CreateRoomSchema, SignupUserSchema} from "@repo/common/zod";
 import { prismaClient } from '@repo/db/client';
 import { protect } from './middlewares/AuthMiddleware';
 import bcrypt from 'bcrypt';
-import { AuthRequest } from './types';
+import { AuthRequest, Room } from './types';
 
 const app = express();
 
@@ -63,7 +63,6 @@ app.get("/room/:slug", async (req, res) => {
         where: {slug} as any
     });
 
-    console.log(room);
 
     if (!room) {
         res.status(404).json({ message: "Room not found" });
@@ -71,7 +70,31 @@ app.get("/room/:slug", async (req, res) => {
     }
 
     res.status(200).json(room);
-})
+});
+
+app.get("/chat/:roomId", async (req, res) => {
+    const roomId: number = Number(req.params.roomId);
+    const room = await prismaClient.room.findFirst({
+        where: {
+            id: roomId
+        },
+        include: {
+            messages: true
+        }
+        
+    });
+
+    if(!room) {
+        res.status(404).json({
+           message: "Room not found." 
+        });
+        return;
+    }
+
+    res.status(200).json({
+        messages: room.messages
+    });
+});
 
 app.post("/create-room", protect, async (req: AuthRequest, res) => {
     const result = CreateRoomSchema.safeParse(req.body);

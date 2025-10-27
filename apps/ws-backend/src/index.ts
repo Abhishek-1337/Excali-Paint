@@ -30,7 +30,6 @@ wss.on('connection', async function connection(ws, request) {
   const decoded = await jwt.verify(token, JWT_SECRET);
   const userId = (decoded as JwtPayload).userId;
   if(!decoded || !userId){
-    console.log("still")
     ws.close();
     return;
   }
