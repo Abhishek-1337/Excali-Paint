@@ -21,7 +21,7 @@ const ChatRoom = async ({
     console.log(messages);
     return (
         <>
-        <ChatRoomClient/>
+        <ChatRoomClient messages={messages}/>
         </>
     );
 }

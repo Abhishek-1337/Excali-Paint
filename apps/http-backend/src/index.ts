@@ -1,7 +1,7 @@
 import express from 'express';
 import jwt from 'jsonwebtoken';
 import { JWT_SECRET } from '@repo/backend-common/config';
-import { CreateRoomSchema, SignupUserSchema} from "@repo/common/zod";
+import { CreateRoomSchema, SigninUserSchema, SignupUserSchema} from "@repo/common/zod";
 import { prismaClient } from '@repo/db/client';
 import { protect } from './middlewares/AuthMiddleware';
 import bcrypt from 'bcrypt';
@@ -49,9 +49,37 @@ app.post("/signup", async (req, res) => {
     });
 })
 
-app.post("/signin", (req, res) => {
-    const userId = 1;
-    const token = jwt.sign({userId}, JWT_SECRET);
+app.post("/signin", async (req, res) => {
+    const result = SigninUserSchema.safeParse(req.body);
+    if(!result.success) {
+        res.status(401).json({
+            message: "Invalid login attempt."
+        });
+        return;
+    }
+
+    const user = await prismaClient.user.findFirst({
+        where: {
+            name: result.data.name
+        }
+    });
+    
+    if(!user) {
+        res.status(404).json({
+            message: "No user found."
+        });
+        return;
+    }
+    const isPasswordValid = await bcrypt.compare(result.data.password, user.password);
+
+    if(!isPasswordValid) {
+        res.status(401).json({
+            message: "Invalid credentials"
+        });
+        return;
+    }
+
+    const token = jwt.sign({userId:user.id}, JWT_SECRET);
     res.status(200).json({
         token
     });

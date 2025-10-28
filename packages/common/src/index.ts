@@ -8,10 +8,10 @@ export const SignupUserSchema = z.object({
 });
 
 export const SigninUserSchema = z.object({
-    username: z.string(),
+    name: z.string(),
     password: z.string()
 });
 
 export const CreateRoomSchema = z.object({
     slug: z.string()
-})
+});

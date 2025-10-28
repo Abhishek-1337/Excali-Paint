@@ -39,6 +39,8 @@ wss.on('connection', async function connection(ws, request) {
     rooms: [],
     ws
   });
+
+  console.log(userRoom);
   ws.on('error', console.error);
 
   ws.on('message', function message(data) {
@@ -66,7 +68,8 @@ wss.on('connection', async function connection(ws, request) {
         await prismaClient.message.create({
           data: {
             roomId,
-            userId
+            userId,
+            message
           }
         });
 
