@@ -154,5 +154,12 @@ app.post("/create-room", protect, async (req: AuthRequest, res) => {
     });
 })
 
+app.get("/rooms", async (req, res) => {
+    const rooms = await prismaClient.room.findMany({});
+    res.status(200).json({
+        rooms
+    });
+});
+
 
 app.listen(3001);
