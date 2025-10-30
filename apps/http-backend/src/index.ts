@@ -6,8 +6,11 @@ import { prismaClient } from '@repo/db/client';
 import { protect } from './middlewares/AuthMiddleware';
 import bcrypt from 'bcrypt';
 import { AuthRequest, Room } from './types';
+import cors from 'cors';
 
 const app = express();
+
+app.use(cors());
 
 app.use(express.json());
 

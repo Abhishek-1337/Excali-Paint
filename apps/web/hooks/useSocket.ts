@@ -10,6 +10,7 @@ const useSocket = () => {
         ws.onopen = () => {
             setLoading(false);
             setSocket(ws);
+            console.log("Connected to the websocket");
         }
     }, []);
     return {socket, loading};

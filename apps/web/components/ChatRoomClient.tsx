@@ -1,33 +1,34 @@
 "use client"
 
 import { useEffect, useState } from "react";
-import { WS_URL } from "../lib/config";
+import useSocket from "../hooks/useSocket";
 
 
 //@ts-ignore
-const ChatRoomClient = ({messages}) => {
-    const [socket, setSocket] = useState<WebSocket>();
+const ChatRoomClient = ({messages, roomId}) => {
+    console.log(messages);
+    const {socket, loading} = useSocket();
     const [message, setMessage] = useState<string>("");
     
     useEffect(() => {
-        const ws = new WebSocket(`${WS_URL}?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJkMjNkYmRiNC1lMjUwLTQ4YzMtYWZhNi02MjYxMzUwYzk1MWMiLCJpYXQiOjE3NjE2NzY5MjB9.EdRSxPjqB_CDo7fTD7RzcXmQ6YclcOQpiNT38k4MmXE`);
-        setSocket(ws);
-        if(ws) {
-            ws.onopen = () => {
-                console.log("Socket open");
-            };
+        if(socket && !loading) {
+            socket.send(JSON.stringify({
+                type: "join-room",
+                roomId: roomId
+            }));
 
-            ws.onmessage = (event) => {
+            socket.onmessage = (event) => {
                 console.log(event.data);
             }
         }
-    }, []);
+    }, [socket, loading]);
 
     const sendMessage = () => {
         socket?.send(JSON.stringify(
             {
             type: "chat",
-            message: "Hii"
+            message: "Hii",
+            roomId: roomId
         }
         ));
     }
@@ -35,8 +36,9 @@ const ChatRoomClient = ({messages}) => {
         <>
             <ul>
                 {
-                    messages.map((m: string) => {
-                        return <li>{m}</li>
+                    //@ts-ignore
+                    messages.map((m, i) => {
+                        return <li key={`m${i}`}>{m.message}</li>
                     })
                 }
             </ul>

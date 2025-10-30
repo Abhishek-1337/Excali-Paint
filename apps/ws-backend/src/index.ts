@@ -14,6 +14,7 @@ interface UserRoomType {
 const userRoom: UserRoomType[] = [];
 
 wss.on('connection', async function connection(ws, request) {
+  console.log("request");
   const url = request.url;
   if(!url) {
     ws.close();
@@ -40,19 +41,18 @@ wss.on('connection', async function connection(ws, request) {
     ws
   });
 
-  console.log(userRoom);
   ws.on('error', console.error);
 
-  ws.on('message', function message(data) {
-    console.log('received: %s', data);
+  ws.on('message', async function message(data) {
     const parsedData = JSON.parse(data.toString());
-    switch (parsedData.type) {
-      case "join-room": const joinRoom = () => {
+    console.log('received: %s', parsedData);
+      if(parsedData.type === "join-room"){
+        console.log("joined");
         const user = userRoom.find((ur) => ur.userId == userId);
         user?.rooms.push(parsedData.roomId);
       }
 
-      case "leave-room": const leaveRoom = () => {
+      if(parsedData.type === "leave-room"){
         const user = userRoom.find((ur) => ur.userId == userId);
         if(!user){
           return;
@@ -61,7 +61,8 @@ wss.on('connection', async function connection(ws, request) {
         user.rooms.filter((roomId) => roomId == parsedData.roomId);
       }
 
-      case "chat": const chat = async () => {
+      if(parsedData.type === "chat"){
+        console.log("chat")
         const roomId = parsedData.roomId;
         const message = parsedData.message;
 
@@ -84,8 +85,7 @@ wss.on('connection', async function connection(ws, request) {
         })
       }
     }
-
-  });
+    );
 
   ws.send('something');
 });
