@@ -74,6 +74,8 @@ wss.on('connection', async function connection(ws, request) {
           }
         });
 
+        console.log(userRoom);
+
         userRoom.forEach((user) => {
           if(user.rooms.includes(roomId)) {
             user.ws.send(JSON.stringify({
