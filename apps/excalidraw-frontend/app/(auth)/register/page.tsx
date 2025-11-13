@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 const Register = () => {
     return (
         <>
@@ -24,6 +26,7 @@ const Register = () => {
                     <button className="px-6 py-2 rounded-lg transition-all duration-200 font-medium bg-blue-600 text-white cursor-pointer mt-4 text-sm">
                       Register
                     </button>
+                    <p className="text-sm">Already have account? <Link href="/login" className="text-blue-500 hover:text-blue-400">Login</Link></p>
                 </div>
               </div>
         </>
