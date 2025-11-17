@@ -1,6 +1,6 @@
 "use client";
 
-import { ContextType, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 
 type ExistingShapes = {
     type: "rect" | "circle";
@@ -9,11 +9,11 @@ type ExistingShapes = {
     width: number;
     height: number;
 }
+let existingShapes: ExistingShapes[] = [];
 
 const Canvas = () => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
 
-    let existingShapes: ExistingShapes[] = [];
 
 
     useEffect(() => {
@@ -30,22 +30,28 @@ const Canvas = () => {
         const onMouseDown = (e: MouseEvent) => {
             console.log("hello");
             isDragging = true;
-            startX = e.offsetX;
-            startY = e.offsetY;
+            startX = e.clientX;
+            startY = e.clientY;
 
         };
 
         const onMouseMove = (e: MouseEvent) => {
             if (!isDragging) return;
 
-            const width = e.offsetX - startX;
-            const height = e.offsetY - startY;
+            const width = e.clientX - startX;
+            const height = e.clientY - startY;
 
-            console.log(e.offsetX - startX);
+            console.log(e.clientX - startX);
 
-            ctx.clearRect(startX, startY, width, height);
-
+            
             // draw main rectangle
+            // ctx.fillStyle = "rgba(0, 0, 0)"
+            ctx.clearRect(0,0, canvas.width, canvas.height);
+            existingShapes.forEach((shape) => {
+                ctx.strokeStyle = "black";
+                ctx.strokeRect(shape.start, shape.end, shape.width, shape.height);
+            });
+            // ctx.fillRect(0, 0, canvas.width, canvas.height);
             ctx.strokeStyle = "black";
             ctx.strokeRect(startX, startY, width, height);
         };
@@ -60,26 +66,20 @@ const Canvas = () => {
                 height: e.offsetY - startY
             });
 
-            console.log(existingShapes);
+            // console.log(existingShapes);
 
-            ctx.clearRect(0,0,canvas.width, canvas.height);
-            existingShapes.forEach((shape) => {
-            if(shape.type === "rect") {
-                ctx.strokeStyle = "black";
-                ctx.strokeRect(shape.start, shape.end, shape.width, shape.height);
-            }
-        });
+            
         };        
         
 
         canvas.addEventListener("mousedown", onMouseDown);
         canvas.addEventListener("mousemove", onMouseMove);
-        window.addEventListener("mouseup", onMouseUp);
+        canvas.addEventListener("mouseup", onMouseUp);
 
         return () => {
             canvas.removeEventListener("mousedown", onMouseDown);
             canvas.removeEventListener("mousemove", onMouseMove);
-            window.removeEventListener("mouseup", onMouseUp);
+            canvas.removeEventListener("mouseup", onMouseUp);
         };
     }, []);
 
