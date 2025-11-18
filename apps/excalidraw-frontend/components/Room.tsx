@@ -1,7 +1,8 @@
 "use client";
 
-import { WS_URL } from "@/lib/config";
+import { BACKEND_URL, WS_URL } from "@/lib/config";
 import { useEffect, useRef, useState } from "react";
+import axios from "axios";
 
 type ShapeType = "rect" | "circle";
 
@@ -22,17 +23,34 @@ const Room = ({ roomId }: {roomId: string}) => {
         ctx.clearRect(0,0, canvas.width, canvas.height);
     }
 
+    async function getAllMessages(ctx:CanvasRenderingContext2D) {
+        const res = await axios.get(`${BACKEND_URL}/chat/${Number(roomId)}`);
+        const messages = res.data.messages;
+        if(messages && messages.length !== 0) {
+            //@ts-ignore
+            messages.forEach((obj) => {
+                const parsedShape = JSON.parse(obj.message);
+                existingShapes.push(parsedShape);
+                delete parsedShape.type;
+                ctx.strokeRect(parsedShape.start, parsedShape.end, parsedShape.width, parsedShape.height);
+            });
+        }
+    }
+
 
     useEffect(() => {
         const canvas = canvasRef.current;
-        console.log(WS_URL);
+        if (!canvas) return;
+        
         const ws = new WebSocket(`${WS_URL}?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJkMjNkYmRiNC1lMjUwLTQ4YzMtYWZhNi02MjYxMzUwYzk1MWMiLCJpYXQiOjE3NjM0MDQwMjR9.ptHkee9SAC6pzjUcAU6HVRxKA1AX28qyT8vG6jU6Fl4`);
         if(!ws) return;
-        if (!canvas) return;
-
+        
         const ctx = canvas.getContext("2d");
         if (!ctx) return;
+        getAllMessages(ctx);
+
         setSocket(ws);
+
         ws.onopen = () => {
             console.log("Socket connected");
             ws.send(JSON.stringify({
@@ -59,7 +77,6 @@ const Room = ({ roomId }: {roomId: string}) => {
         let isDragging = false;
 
         const onMouseDown = (e: MouseEvent) => {
-            console.log("hello");
             isDragging = true;
             startX = e.clientX;
             startY = e.clientY;

@@ -30,6 +30,7 @@ wss.on('connection', async function connection(ws, request) {
 
   const decoded = await jwt.verify(token, JWT_SECRET);
   const userId = (decoded as JwtPayload).userId;
+  console.log(userId);
   if(!decoded || !userId){
     ws.close();
     return;
@@ -48,8 +49,13 @@ wss.on('connection', async function connection(ws, request) {
     console.log('received: %s', parsedData);
       if(parsedData.type === "join-room"){
         console.log("joined");
-        const user = userRoom.find((ur) => ur.userId == userId);
-        user?.rooms.push(parsedData.roomId);
+        // const user = userRoom.find((ur) => ur.userId == userId);
+
+        userRoom.forEach((userRoom ) => {
+          if(userRoom.userId === userId) {
+            userRoom?.rooms.push(parsedData.roomId);
+          }
+        })
       }
 
       if(parsedData.type === "leave-room"){
@@ -74,7 +80,7 @@ wss.on('connection', async function connection(ws, request) {
           }
         });
 
-        console.log(userRoom);
+        console.log(userRoom.map((userRoom) => ({userId: userRoom.userId, rooms: userRoom.rooms})));
 
         userRoom.forEach((user) => {
           if(user.rooms.includes(roomId)) {
@@ -89,5 +95,4 @@ wss.on('connection', async function connection(ws, request) {
     }
     );
 
-  ws.send('something');
 });
