@@ -18,12 +18,20 @@ const Room = ({ roomId }: {roomId: string}) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [socket, setSocket] = useState<WebSocket>();
 
+    function clearCanvas(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
+        ctx.clearRect(0,0, canvas.width, canvas.height);
+    }
+
 
     useEffect(() => {
         const canvas = canvasRef.current;
         console.log(WS_URL);
         const ws = new WebSocket(`${WS_URL}?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJkMjNkYmRiNC1lMjUwLTQ4YzMtYWZhNi02MjYxMzUwYzk1MWMiLCJpYXQiOjE3NjM0MDQwMjR9.ptHkee9SAC6pzjUcAU6HVRxKA1AX28qyT8vG6jU6Fl4`);
         if(!ws) return;
+        if (!canvas) return;
+
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return;
         setSocket(ws);
         ws.onopen = () => {
             console.log("Socket connected");
@@ -35,12 +43,16 @@ const Room = ({ roomId }: {roomId: string}) => {
         };
 
         ws.onmessage = (event) => {
-            console.log(event);
+            const parsedData = JSON.parse(event.data);
+            if(parsedData.roomId === Number(roomId)) {
+                const parsedShape = JSON.parse(parsedData.message);
+                existingShapes.push(
+                    parsedShape
+                );
+                ctx.strokeRect(parsedShape.start, parsedShape.end, parsedShape.width, parsedShape.height);
+            }
         }
-        if (!canvas) return;
-
-        const ctx = canvas.getContext("2d");
-        if (!ctx) return;
+        
 
         let startX = 0;
         let startY = 0;
@@ -60,19 +72,17 @@ const Room = ({ roomId }: {roomId: string}) => {
             const width = e.clientX - startX;
             const height = e.clientY - startY;
 
-            console.log(e.clientX - startX);
-
-            
             // draw main rectangle
             // ctx.fillStyle = "rgba(0, 0, 0)"
-            ctx.clearRect(0,0, canvas.width, canvas.height);
+            ctx.strokeStyle = "black";
+            clearCanvas(ctx, canvas);
+            ctx.strokeRect(startX, startY, width, height);
             existingShapes.forEach((shape) => {
                 ctx.strokeStyle = "black";
                 ctx.strokeRect(shape.start, shape.end, shape.width, shape.height);
             });
             // ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.strokeStyle = "black";
-            ctx.strokeRect(startX, startY, width, height);
+            
         };
 
         const onMouseUp = (e: any) => {
@@ -85,15 +95,12 @@ const Room = ({ roomId }: {roomId: string}) => {
                 height: e.offsetY - startY
             };
             existingShapes.push(shape);
-            console.log(socket);
             ws.send(JSON.stringify({
                 type: "chat",
                 roomId: Number(roomId),
                 message: JSON.stringify(shape)
             }));
-            // console.log(existingShapes);
-
-            
+            console.log(existingShapes);  
         };        
         
 
@@ -112,8 +119,8 @@ const Room = ({ roomId }: {roomId: string}) => {
     return (
         <canvas
             ref={canvasRef}
-            width={5000}
-            height={5000}
+            width={window.innerWidth}
+            height={window.innerHeight}
             className="bg-white"
         />
     );
