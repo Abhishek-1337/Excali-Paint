@@ -17,6 +17,7 @@ let existingShapes: ExistingShapes[] = [];
 
 const Room = ({ roomId }: {roomId: string}) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
+    const [canvasType, setCanvasType] = useState<ShapeType | null>(null);
     const [socket, setSocket] = useState<WebSocket>();
 
     function clearCanvas(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
@@ -88,16 +89,31 @@ const Room = ({ roomId }: {roomId: string}) => {
 
             const width = e.clientX - startX;
             const height = e.clientY - startY;
-
+            let cType;
             // draw main rectangle
             // ctx.fillStyle = "rgba(0, 0, 0)"
             ctx.strokeStyle = "black";
             clearCanvas(ctx, canvas);
-            ctx.strokeRect(startX, startY, width, height);
-            existingShapes.forEach((shape) => {
-                ctx.strokeStyle = "black";
-                ctx.strokeRect(shape.start, shape.end, shape.width, shape.height);
-            });
+            cType = canvasType;
+            console.log(cType)
+            
+            if(cType === "rect") {
+                ctx.strokeRect(startX, startY, width, height);
+                existingShapes.forEach((shape) => {
+                    ctx.strokeStyle = "black";
+                    ctx.strokeRect(shape.start, shape.end, shape.width, shape.height);
+                });
+            }
+            else if(cType === "circle") {
+                console.log(cType);
+                const radius = Math.max(width, height) / 2;
+                const x = startX + radius;
+
+                ctx.beginPath();
+                ctx.arc(x, startY, radius, 0, 2*Math.PI);
+                ctx.stroke();
+                ctx.closePath();
+            }
             // ctx.fillRect(0, 0, canvas.width, canvas.height);
             
         };
@@ -134,12 +150,24 @@ const Room = ({ roomId }: {roomId: string}) => {
     }, []);
 
     return (
-        <canvas
-            ref={canvasRef}
-            width={window.innerWidth}
-            height={window.innerHeight}
-            className="bg-white"
-        />
+        <>
+           <div className="flex relative h-screen w-screen">
+                 <canvas
+                    ref={canvasRef}
+                    width={window.innerWidth} 
+                    height={window.innerHeight}
+                    className="bg-white"
+                ></canvas>
+                <div className="absolute z-10 w-60 min-h-20 bg-gray-600 rounded-lg flex gap-4 p-4 m-4 items-center">
+                    <button className="w-8 h-8 border-2 border-white hover:w-9 hover:h-9 cursor-pointer"
+                    ></button>
+                    <button 
+                    className="w-8 h-8 border-2 border-white rounded-full hover:w-9 hover:h-9 cursor-pointer"
+                    onClick={() => { setCanvasType("circle")}}
+                    ></button>
+                </div>
+           </div>
+        </>
     );
 };
 
