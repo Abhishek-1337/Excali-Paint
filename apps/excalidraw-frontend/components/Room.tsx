@@ -6,18 +6,30 @@ import axios from "axios";
 
 type ShapeType = "rect" | "circle";
 
-type ExistingShapes = {
-    type: ShapeType;
+type rect = {
+    type: "rect";
     start: number;
     end: number;
     width: number;
     height: number;
-}
+};
+
+type circle = {
+    type: "circle",
+    x: number;
+    y: number;
+    radius: number;
+    startAngle: number;
+    endAngle: number;
+};
+
+type ExistingShapes =  rect | circle; 
+
 let existingShapes: ExistingShapes[] = [];
 
 const Room = ({ roomId }: {roomId: string}) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
-    const [canvasType, setCanvasType] = useState<ShapeType | null>(null);
+    const [canvasType, setCanvasType] = useState<ShapeType>("rect");
     const [socket, setSocket] = useState<WebSocket>();
 
     function clearCanvas(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
@@ -32,8 +44,15 @@ const Room = ({ roomId }: {roomId: string}) => {
             messages.forEach((obj) => {
                 const parsedShape = JSON.parse(obj.message);
                 existingShapes.push(parsedShape);
-                delete parsedShape.type;
-                ctx.strokeRect(parsedShape.start, parsedShape.end, parsedShape.width, parsedShape.height);
+                if(parsedShape.type === "rect") {
+                    ctx.strokeRect(parsedShape.start, parsedShape.end, parsedShape.width, parsedShape.height);
+                }
+                else {
+                    ctx.beginPath();
+                    ctx.arc(parsedShape.x, parsedShape.y, parsedShape.radius, parsedShape.startAngle, parsedShape.endAngle);
+                    ctx.stroke();
+                    ctx.closePath();
+                }
             });
         }
     }
@@ -75,6 +94,8 @@ const Room = ({ roomId }: {roomId: string}) => {
 
         let startX = 0;
         let startY = 0;
+        let x = 0;
+        let radius = 0;
         let isDragging = false;
 
         const onMouseDown = (e: MouseEvent) => {
@@ -89,44 +110,67 @@ const Room = ({ roomId }: {roomId: string}) => {
 
             const width = e.clientX - startX;
             const height = e.clientY - startY;
-            let cType;
             // draw main rectangle
             // ctx.fillStyle = "rgba(0, 0, 0)"
             ctx.strokeStyle = "black";
             clearCanvas(ctx, canvas);
-            cType = canvasType;
-            console.log(cType)
-            
-            if(cType === "rect") {
+            //@ts-ignore
+            if(window.shapeType === "rect") {
                 ctx.strokeRect(startX, startY, width, height);
-                existingShapes.forEach((shape) => {
-                    ctx.strokeStyle = "black";
-                    ctx.strokeRect(shape.start, shape.end, shape.width, shape.height);
-                });
             }
-            else if(cType === "circle") {
-                console.log(cType);
-                const radius = Math.max(width, height) / 2;
-                const x = startX + radius;
+            // else if(cType === "circle") {
+            //@ts-ignore
+            else if(window.shapeType === "circle") {
+                radius = Math.max(width, height) / 2;
+                x = startX + radius;
 
                 ctx.beginPath();
                 ctx.arc(x, startY, radius, 0, 2*Math.PI);
                 ctx.stroke();
                 ctx.closePath();
             }
+
+            existingShapes.forEach((shape) => {
+                    ctx.strokeStyle = "black";
+                    if(shape.type === "rect") {
+                        ctx.strokeRect(shape.start, shape.end, shape.width, shape.height);
+                    }
+                    else{
+                        ctx.beginPath();
+                        ctx.arc(shape.x, shape.y, shape.radius, shape.startAngle, shape.endAngle);
+                        ctx.stroke();
+                        ctx.closePath();
+                    }
+            });
             // ctx.fillRect(0, 0, canvas.width, canvas.height);
             
         };
 
         const onMouseUp = (e: any) => {
             isDragging = false;
-            const shape: ExistingShapes = {
-                type: "rect",
-                start: startX,
-                end: startY,
-                width: e.offsetX - startX,
-                height: e.offsetY - startY
-            };
+            let shape: ExistingShapes;
+            //@ts-ignore
+            if(window.shapeType === "rect") {
+                shape = {
+                    type: "rect",
+                    start: startX,
+                    end: startY,
+                    width: e.offsetX - startX,
+                    height: e.offsetY - startY
+                };
+            }
+            else{
+                shape = {
+                    type: "circle",
+                    x,
+                    y: startY,
+                    radius,
+                    startAngle: 0,
+                    endAngle: 2*Math.PI
+                }
+            }
+
+            console.log(shape);
             existingShapes.push(shape);
             ws.send(JSON.stringify({
                 type: "chat",
@@ -159,11 +203,22 @@ const Room = ({ roomId }: {roomId: string}) => {
                     className="bg-white"
                 ></canvas>
                 <div className="absolute z-10 w-60 min-h-20 bg-gray-600 rounded-lg flex gap-4 p-4 m-4 items-center">
-                    <button className="w-8 h-8 border-2 border-white hover:w-9 hover:h-9 cursor-pointer"
+                    <button 
+                    className="w-8 h-8 border-2 border-white hover:w-9 hover:h-9 cursor-pointer"
+                    onClick={() => {
+                        //@ts-ignore
+                        window.shapeType = "rect"
+                    }}
                     ></button>
                     <button 
                     className="w-8 h-8 border-2 border-white rounded-full hover:w-9 hover:h-9 cursor-pointer"
-                    onClick={() => { setCanvasType("circle")}}
+                    onClick={() => 
+                        {
+                            //@ts-ignore 
+                            window.shapeType = "circle"
+                            // setCanvasType("circle")
+                        }
+                    }
                     ></button>
                 </div>
            </div>
