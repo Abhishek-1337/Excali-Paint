@@ -1,3 +1,4 @@
+import { getAllMessages } from "@/lib/api/canvas";
 import { ExistingShapes } from "@/types/types";
 
 export class Canvas {
@@ -23,7 +24,7 @@ export class Canvas {
         this.initMouseHandlers();
     }
 
-    init() {
+    async init() {
 
         this.socket.onmessage = (event) => {
             const parsedData = JSON.parse(event.data);
@@ -35,6 +36,29 @@ export class Canvas {
                 this.ctx.strokeRect(parsedShape.start, parsedShape.end, parsedShape.width, parsedShape.height);
             }
         }
+
+        const res = await getAllMessages(this.roomId);
+        if(res && !res.error) {
+            if(res.messages && res.messages.length !== 0) {
+            //@ts-ignore
+                res.messages.forEach((obj) => {
+                    const parsedShape = JSON.parse(obj.message);
+                    this.existingShapes.push(parsedShape);
+                    console.log(parsedShape);
+                    if(parsedShape.type === "rect") {
+                        this.ctx.strokeRect(parsedShape.start, parsedShape.end, parsedShape.width, parsedShape.height);
+                    }
+                    else {
+                        this.ctx.beginPath();
+                        this.ctx.arc(parsedShape.x, parsedShape.y, parsedShape.radius, parsedShape.startAngle, parsedShape.endAngle);
+                        this.ctx.stroke();
+                        this.ctx.closePath();
+                    }
+                });
+            }
+        }
+
+        console.log(this.existingShapes);
     }
 
     setShapeType(shapeType: string) {
@@ -60,6 +84,7 @@ export class Canvas {
         }
         else if(this.shapeType === "circle") {
             this.radius = Math.max(width, height) / 2;
+            console.log(this.radius);
             this.x = this.startX + this.radius;
 
             this.ctx.beginPath();
@@ -88,7 +113,7 @@ export class Canvas {
         this.isDragging = false;
         let shape: ExistingShapes;
         //@ts-ignore
-        if(window.shapeType === "rect") {
+        if(this.shapeType === "rect") {
             shape = {
                 type: "rect",
                 start: this.startX,
@@ -121,6 +146,17 @@ export class Canvas {
 
     clearCanvas() {
             this.ctx.clearRect(0,0, this.canvas.width, this.canvas.height);
+            this.existingShapes.forEach((shape) => {
+                if(shape.type === "rect") {
+                    this.ctx.strokeRect(shape.start, shape.end, shape.width, shape.height);
+                }
+                else {
+                    this.ctx.beginPath();
+                    this.ctx.arc(shape.x, shape.y, shape.radius, shape.startAngle, shape.endAngle);
+                    this.ctx.stroke();
+                    this.ctx.closePath();
+                }
+            })
     }
 
     initMouseHandlers() {

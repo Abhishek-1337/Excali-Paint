@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { initDraw } from "@/lib/canvas";
 import { ExistingShapes } from "@/types/types";
+import { Canvas } from "@/draw/Canvas";
 
 
 type ShapeType = "rect" | "circle";
@@ -13,33 +14,9 @@ let existingShapes: ExistingShapes[] = [];
 
 const Room = ({ roomId }: {roomId: string}) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
-    const [canvasType, setCanvasType] = useState<ShapeType>("rect");
-    const [socket, setSocket] = useState<WebSocket>();
+    const [canvas, setCanvas] = useState<Canvas>();
 
-    function clearCanvas(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
-        ctx.clearRect(0,0, canvas.width, canvas.height);
-    }
-
-    async function getAllMessages(ctx:CanvasRenderingContext2D) {
-        const res = await axios.get(`${BACKEND_URL}/chat/${Number(roomId)}`);
-        const messages = res.data.messages;
-        if(messages && messages.length !== 0) {
-            //@ts-ignore
-            messages.forEach((obj) => {
-                const parsedShape = JSON.parse(obj.message);
-                existingShapes.push(parsedShape);
-                if(parsedShape.type === "rect") {
-                    ctx.strokeRect(parsedShape.start, parsedShape.end, parsedShape.width, parsedShape.height);
-                }
-                else {
-                    ctx.beginPath();
-                    ctx.arc(parsedShape.x, parsedShape.y, parsedShape.radius, parsedShape.startAngle, parsedShape.endAngle);
-                    ctx.stroke();
-                    ctx.closePath();
-                }
-            });
-        }
-    }
+    
 
 
     useEffect(() => {
@@ -48,9 +25,22 @@ const Room = ({ roomId }: {roomId: string}) => {
 
         const ctx = canvas.getContext("2d");
         if(!ctx) return;
-        getAllMessages(ctx);
-        
-        initDraw(roomId, canvas, existingShapes);
+
+        const ws = new WebSocket(`${WS_URL}?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJkMjNkYmRiNC1lMjUwLTQ4YzMtYWZhNi02MjYxMzUwYzk1MWMiLCJpYXQiOjE3NjM0MDQwMjR9.ptHkee9SAC6pzjUcAU6HVRxKA1AX28qyT8vG6jU6Fl4`);
+        if(!ws) return;
+
+        ws.onopen = () => {
+            console.log("Socket connected");
+            ws.send(JSON.stringify({
+                type: "join-room",
+                roomId: Number(roomId)
+
+            }))
+        };
+
+        const g = new Canvas(canvas, ws, roomId);
+        setCanvas(g);
+        // initDraw(roomId, canvas, existingShapes);
 
     }, []);
     // useEffect(() => {
@@ -197,24 +187,19 @@ const Room = ({ roomId }: {roomId: string}) => {
                     height={window.innerHeight}
                     className="bg-white"
                 ></canvas>
-                <div className="absolute z-10 w-60 min-h-20 bg-gray-600 rounded-lg flex gap-4 p-4 m-4 items-center">
-                    <button 
-                    className="w-8 h-8 border-2 border-white hover:w-9 hover:h-9 cursor-pointer"
-                    onClick={() => {
-                        //@ts-ignore
-                        window.shapeType = "rect"
-                    }}
-                    ></button>
-                    <button 
-                    className="w-8 h-8 border-2 border-white rounded-full hover:w-9 hover:h-9 cursor-pointer"
-                    onClick={() => 
-                        {
-                            //@ts-ignore 
-                            window.shapeType = "circle"
-                            // setCanvasType("circle")
-                        }
-                    }
-                    ></button>
+                <div className="absolute z-10 w-60 bg-gray-400 shadow-xs shadow-gray-500 rounded-xl flex gap-2 p-2 m-4">
+                    <div className="p-2 hover:bg-gray-300 transition-all duration-200 rounded-lg max-h-min">
+                        <div
+                        className="w-4 h-4 border-2 border-white  rounded-xs cursor-pointer hover:border-black"
+                        onClick={() => canvas?.setShapeType("rect")}
+                        ></div>
+                    </div>
+                    <div className="p-2 hover:bg-gray-300 transition-all duration-200 rounded-lg max-h-min">
+                        <div 
+                        className="w-4 h-4 border-2 border-white rounded-full hover:border-black cursor-pointer"
+                        onClick={() => canvas?.setShapeType("circle")}
+                        ></div>
+                    </div>
                 </div>
            </div>
         </>
