@@ -100,20 +100,6 @@ export class Canvas {
             this.startX = x;
             this.startY = y;
         }
-
-        // this.existingShapes.forEach((shape) => {
-        //         this.ctx.strokeStyle = "black";
-        //         if(shape.type === "rect") {
-        //             this.ctx.strokeRect(shape.start, shape.end, shape.width, shape.height);
-        //         }
-        //         else if(shape.type === "circle"){
-        //             this.ctx.beginPath();
-        //             this.ctx.arc(shape.x, shape.y, shape.radius, shape.startAngle, shape.endAngle);
-        //             this.ctx.stroke();
-        //             this.ctx.closePath();
-        //         }
-        // });
-        // ctx.fillRect(0, 0, canvas.width, canvas.height);
         
     };
 
