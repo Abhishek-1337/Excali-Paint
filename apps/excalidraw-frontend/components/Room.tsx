@@ -6,6 +6,7 @@ import axios from "axios";
 import { initDraw } from "@/lib/canvas";
 import { ExistingShapes } from "@/types/types";
 import { Canvas } from "@/draw/Canvas";
+import { CircleIcon, PenIcon, RectangleCircleIcon, RectangleHorizontal, RectangleHorizontalIcon, RectangleVerticalIcon, SquareSplitHorizontal } from "lucide-react";
 
 
 type ShapeType = "rect" | "circle";
@@ -188,17 +189,23 @@ const Room = ({ roomId }: {roomId: string}) => {
                     className="bg-white"
                 ></canvas>
                 <div className="absolute z-10 w-60 bg-gray-400 shadow-xs shadow-gray-500 rounded-xl flex gap-2 p-2 m-4">
-                    <div className="p-2 hover:bg-gray-300 transition-all duration-200 rounded-lg max-h-min">
-                        <div
-                        className="w-4 h-4 border-2 border-white  rounded-xs cursor-pointer hover:border-black"
+                    <div 
+                    className="p-2 hover:bg-gray-300 text-gray-600 hover:text-gray-500 transition-all duration-200 rounded-lg max-h-min"
+
+                    >
+                        <RectangleHorizontalIcon 
                         onClick={() => canvas?.setShapeType("rect")}
-                        ></div>
+                        className="text-gray-600"
+                        />
                     </div>
-                    <div className="p-2 hover:bg-gray-300 transition-all duration-200 rounded-lg max-h-min">
-                        <div 
-                        className="w-4 h-4 border-2 border-white rounded-full hover:border-black cursor-pointer"
+                    <div className="p-2 hover:bg-gray-300 text-gray-600 hover:text-gray-500 transition-all duration-200 rounded-lg max-h-min">
+                        <CircleIcon
                         onClick={() => canvas?.setShapeType("circle")}
-                        ></div>
+                        className="text-gray-600 w-6 h-6"
+                        />
+                    </div>
+                    <div className="p-2 hover:bg-gray-300 text-gray-600 hover:text-gray-500 transition-all duration-200 rounded-lg max-h-min">
+                        <PenIcon className="text-inherit" onClick={() => canvas?.setShapeType("pen")}/>
                     </div>
                 </div>
            </div>
