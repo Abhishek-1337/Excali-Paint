@@ -1,5 +1,5 @@
 import { getAllMessages } from "@/lib/api/canvas";
-import { ExistingShapes } from "@/types/types";
+import { ExistingShapes, pen } from "@/types/types";
 
 export class Canvas {
     private ctx;
@@ -13,6 +13,7 @@ export class Canvas {
     private shapeType: string = "rect";
     private x = 0;
     private radius = 0;
+    private coordinates: {x: number, y: number}[] = [];
 
 
     constructor(canvas: HTMLCanvasElement, socket: WebSocket, roomId: string) {
@@ -26,6 +27,8 @@ export class Canvas {
 
     async init() {
 
+        console.log(this.existingShapes);
+
         this.socket.onmessage = (event) => {
             const parsedData = JSON.parse(event.data);
             if(parsedData.roomId === Number(this.roomId)) {
@@ -33,7 +36,7 @@ export class Canvas {
                 this.existingShapes.push(
                     parsedShape
                 );
-                this.ctx.strokeRect(parsedShape.start, parsedShape.end, parsedShape.width, parsedShape.height);
+                this.clearCanvas();
             }
         }
 
@@ -44,21 +47,12 @@ export class Canvas {
                 res.messages.forEach((obj) => {
                     const parsedShape = JSON.parse(obj.message);
                     this.existingShapes.push(parsedShape);
-                    console.log(parsedShape);
-                    if(parsedShape.type === "rect") {
-                        this.ctx.strokeRect(parsedShape.start, parsedShape.end, parsedShape.width, parsedShape.height);
-                    }
-                    else {
-                        this.ctx.beginPath();
-                        this.ctx.arc(parsedShape.x, parsedShape.y, parsedShape.radius, parsedShape.startAngle, parsedShape.endAngle);
-                        this.ctx.stroke();
-                        this.ctx.closePath();
-                    }
                 });
             }
         }
 
-        console.log(this.existingShapes);
+        this.clearCanvas();
+
     }
 
     setShapeType(shapeType: string) {
@@ -76,35 +70,49 @@ export class Canvas {
 
         const width = e.clientX - this.startX;
         const height = e.clientY - this.startY;
-        this.ctx.strokeStyle = "black";
-        this.clearCanvas();
+        const x = e.clientX;
+        const y = e.clientY;
 
+        this.ctx.strokeStyle = "black";
+        
         if(this.shapeType === "rect") {
+            this.clearCanvas();
             this.ctx.strokeRect(this.startX, this.startY, width, height);
         }
         else if(this.shapeType === "circle") {
             this.radius = Math.max(width, height) / 2;
-            console.log(this.radius);
             this.x = this.startX + this.radius;
+            this.clearCanvas();
 
             this.ctx.beginPath();
             this.ctx.arc(this.x, this.startY, this.radius, 0, 2*Math.PI);
             this.ctx.stroke();
             this.ctx.closePath();
         }
+        else {
+            this.coordinates.push({x: this.startX, y: this.startY});
+            this.ctx.beginPath();
+            this.ctx.setLineDash([]);
+            this.ctx.moveTo(this.startX, this.startY);
+            this.ctx.lineTo(x,y);
+            this.ctx.stroke();
 
-        this.existingShapes.forEach((shape) => {
-                this.ctx.strokeStyle = "black";
-                if(shape.type === "rect") {
-                    this.ctx.strokeRect(shape.start, shape.end, shape.width, shape.height);
-                }
-                else{
-                    this.ctx.beginPath();
-                    this.ctx.arc(shape.x, shape.y, shape.radius, shape.startAngle, shape.endAngle);
-                    this.ctx.stroke();
-                    this.ctx.closePath();
-                }
-        });
+            this.startX = x;
+            this.startY = y;
+        }
+
+        // this.existingShapes.forEach((shape) => {
+        //         this.ctx.strokeStyle = "black";
+        //         if(shape.type === "rect") {
+        //             this.ctx.strokeRect(shape.start, shape.end, shape.width, shape.height);
+        //         }
+        //         else if(shape.type === "circle"){
+        //             this.ctx.beginPath();
+        //             this.ctx.arc(shape.x, shape.y, shape.radius, shape.startAngle, shape.endAngle);
+        //             this.ctx.stroke();
+        //             this.ctx.closePath();
+        //         }
+        // });
         // ctx.fillRect(0, 0, canvas.width, canvas.height);
         
     };
@@ -122,7 +130,7 @@ export class Canvas {
                 height: e.offsetY - this.startY
             };
         }
-        else{
+        else if(this.shapeType === "circle"){
             shape = {
                 type: "circle",
                 x: this.x,
@@ -132,8 +140,14 @@ export class Canvas {
                 endAngle: 2*Math.PI
             }
         }
+        else {
+            this.coordinates.push({x: e.clientX, y: e.clientY});
+            shape = {
+                type: "pen",
+                coordinates: this.coordinates
+            }
+        }
 
-        console.log(shape);
         this.existingShapes.push(shape);
         this.socket.send(JSON.stringify({
             type: "chat",
@@ -150,11 +164,26 @@ export class Canvas {
                 if(shape.type === "rect") {
                     this.ctx.strokeRect(shape.start, shape.end, shape.width, shape.height);
                 }
-                else {
+                else if(shape.type === "circle"){
                     this.ctx.beginPath();
                     this.ctx.arc(shape.x, shape.y, shape.radius, shape.startAngle, shape.endAngle);
                     this.ctx.stroke();
                     this.ctx.closePath();
+                }
+                else {
+                    let positions = shape.coordinates;
+                    let x = positions[0].x;
+                    let y = positions[1].y;
+                    for(let i = 1; i < positions.length; i++) {
+                        this.ctx.beginPath();
+                        this.ctx.setLineDash([]);
+                        this.ctx.moveTo(x, y);
+                        this.ctx.lineTo(positions[i].x, positions[i].y);
+                        this.ctx.stroke();
+
+                        x = positions[i].x;
+                        y = positions[i].y;
+                    } 
                 }
             })
     }

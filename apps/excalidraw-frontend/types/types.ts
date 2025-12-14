@@ -16,4 +16,9 @@ export type circle = {
     endAngle: number;
 };
 
-export type ExistingShapes =  rect | circle; 
+export type pen = {
+    type: "pen",
+    coordinates: {x: number, y: number}[]
+}
+
+export type ExistingShapes =  rect | circle | pen; 
