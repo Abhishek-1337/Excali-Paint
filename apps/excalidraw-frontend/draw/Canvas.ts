@@ -140,7 +140,8 @@ export class Canvas {
             roomId: Number(this.roomId),
             message: JSON.stringify(shape)
         }));
-        console.log(this.existingShapes);  
+
+        this.coordinates = [];
     };        
     
 

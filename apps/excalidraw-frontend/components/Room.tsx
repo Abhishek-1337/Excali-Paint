@@ -3,7 +3,7 @@
 import { WS_URL } from "@/lib/config";
 import { useEffect, useRef, useState } from "react";
 import { Canvas } from "@/draw/Canvas";
-import { CircleIcon, PenIcon, RectangleHorizontalIcon } from "lucide-react";
+import { CircleIcon, SquareIcon, PencilIcon } from "lucide-react";
 
 const Room = ({ roomId }: {roomId: string}) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -51,7 +51,7 @@ const Room = ({ roomId }: {roomId: string}) => {
                     className="p-2 hover:bg-gray-400 text-gray-600 hover:text-white transition-all duration-200 rounded-lg max-h-min cursor-pointer"
 
                     >
-                        <RectangleHorizontalIcon 
+                        <SquareIcon 
                         onClick={() => canvas?.setShapeType("rect")}
                         className="text-inherit"
                         />
@@ -63,7 +63,7 @@ const Room = ({ roomId }: {roomId: string}) => {
                         />
                     </div>
                     <div className="p-2 hover:bg-gray-400 text-gray-600 hover:text-white transition-all duration-200 rounded-lg max-h-min cursor-pointer">
-                        <PenIcon className="text-inherit" onClick={() => canvas?.setShapeType("pen")}/>
+                        <PencilIcon className="text-inherit" onClick={() => canvas?.setShapeType("pen")}/>
                     </div>
                 </div>
                 <div className="absolute z-10 left-10 bottom-0 ring-1 ring-gray-600/20 shadow-sm rounded-xl flex gap-2 p-2 m-4">
