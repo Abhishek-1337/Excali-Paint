@@ -14,6 +14,7 @@ export class Canvas {
     private x = 0;
     private radius = 0;
     private coordinates: {x: number, y: number}[] = [];
+    private scale = 1;
 
 
     constructor(canvas: HTMLCanvasElement, socket: WebSocket, roomId: string) {
@@ -36,7 +37,8 @@ export class Canvas {
                 this.existingShapes.push(
                     parsedShape
                 );
-                this.clearCanvas();
+                // this.clearCanvas();
+                this.render();
             }
         }
 
@@ -51,12 +53,24 @@ export class Canvas {
             }
         }
 
-        this.clearCanvas();
+        this.render();
 
     }
 
     setShapeType(shapeType: string) {
         this.shapeType = shapeType;
+    }
+
+    // setScale(factor: number) {
+    //     this.scale *= factor;
+    //     this.ctx.setTransform(1, 0, 0, 1, 0, 0); 
+    //     this.ctx.scale(this.scale, this.scale);
+    //     this.clearCanvas();
+    // }
+
+    setScale(factor: number) {
+        this.scale *= factor;
+        this.render();
     }
 
     onMouseDown = (e: MouseEvent) => {
@@ -76,13 +90,15 @@ export class Canvas {
         this.ctx.strokeStyle = "black";
         
         if(this.shapeType === "rect") {
-            this.clearCanvas();
+            // this.clearCanvas();
+            this.render();
             this.ctx.strokeRect(this.startX, this.startY, width, height);
         }
         else if(this.shapeType === "circle") {
             this.radius = Math.max(width, height) / 2;
             this.x = this.startX + this.radius;
-            this.clearCanvas();
+            // this.clearCanvas();
+            this.render();
 
             this.ctx.beginPath();
             this.ctx.arc(this.x, this.startY, this.radius, 0, 2*Math.PI);
@@ -143,37 +159,90 @@ export class Canvas {
 
         this.coordinates = [];
     };        
-    
 
     clearCanvas() {
-            this.ctx.clearRect(0,0, this.canvas.width, this.canvas.height);
-            this.existingShapes.forEach((shape) => {
-                if(shape.type === "rect") {
-                    this.ctx.strokeRect(shape.start, shape.end, shape.width, shape.height);
-                }
-                else if(shape.type === "circle"){
-                    this.ctx.beginPath();
-                    this.ctx.arc(shape.x, shape.y, shape.radius, shape.startAngle, shape.endAngle);
-                    this.ctx.stroke();
-                    this.ctx.closePath();
-                }
-                else {
-                    let positions = shape.coordinates;
-                    let x = positions[0].x;
-                    let y = positions[1].y;
-                    for(let i = 1; i < positions.length; i++) {
-                        this.ctx.beginPath();
-                        this.ctx.setLineDash([]);
-                        this.ctx.moveTo(x, y);
-                        this.ctx.lineTo(positions[i].x, positions[i].y);
-                        this.ctx.stroke();
-
-                        x = positions[i].x;
-                        y = positions[i].y;
-                    } 
-                }
-            })
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     }
+
+    
+
+    // clearCanvas() {
+    //         this.ctx.save();
+    //         this.ctx.setTransform(1, 0, 0, 1, 0, 0);
+    //         this.ctx.clearRect(0,0, this.canvas.width, this.canvas.height);
+    //         this.existingShapes.forEach((shape) => {
+    //             if(shape.type === "rect") {
+    //                 this.ctx.strokeRect(shape.start, shape.end, shape.width, shape.height);
+    //             }
+    //             else if(shape.type === "circle"){
+    //                 this.ctx.beginPath();
+    //                 this.ctx.arc(shape.x, shape.y, shape.radius, shape.startAngle, shape.endAngle);
+    //                 this.ctx.stroke();
+    //                 this.ctx.closePath();
+    //             }
+    //             else {
+    //                 let positions = shape.coordinates;
+    //                 let x = positions[0].x;
+    //                 let y = positions[1].y;
+    //                 for(let i = 1; i < positions.length; i++) {
+    //                     this.ctx.beginPath();
+    //                     this.ctx.setLineDash([]);
+    //                     this.ctx.moveTo(x, y);
+    //                     this.ctx.lineTo(positions[i].x, positions[i].y);
+    //                     this.ctx.stroke();
+
+    //                     x = positions[i].x;
+    //                     y = positions[i].y;
+    //                 } 
+    //             }
+    //         })
+    // }
+
+    render() {
+           const ctx = this.ctx;
+
+           ctx.setTransform(1, 0, 0, 1, 0, 0); // reset
+           ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+           ctx.scale(this.scale, this.scale);
+
+           this.drawShapes();
+    }   
+
+
+    drawShapes() {
+        this.existingShapes.forEach((shape) => {
+            if (shape.type === "rect") {
+                this.ctx.strokeRect(
+                    shape.start,
+                    shape.end,
+                    shape.width,
+                    shape.height
+                );
+            }
+            else if (shape.type === "circle") {
+                this.ctx.beginPath();
+                this.ctx.arc(
+                    shape.x,
+                    shape.y,
+                    shape.radius,
+                    shape.startAngle,
+                    shape.endAngle
+                );
+                this.ctx.stroke();
+            }
+            else {
+                const positions = shape.coordinates;
+                for (let i = 1; i < positions.length; i++) {
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(positions[i - 1].x, positions[i - 1].y);
+                    this.ctx.lineTo(positions[i].x, positions[i].y);
+                    this.ctx.stroke();
+                }
+            }
+        });
+    }
+
 
     initMouseHandlers() {
         this.canvas.addEventListener("mousemove", this.onMouseMove);
