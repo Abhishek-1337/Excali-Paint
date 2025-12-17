@@ -75,17 +75,20 @@ export class Canvas {
 
     onMouseDown = (e: MouseEvent) => {
         this.isDragging = true;
-        this.startX = e.clientX;
-        this.startY = e.clientY;
+        this.startX = e.clientX/this.scale;
+        this.startY = e.clientY/this.scale;
     };
 
     onMouseMove = (e: MouseEvent) => {
         if (!this.isDragging) return;
 
-        const width = e.clientX - this.startX;
-        const height = e.clientY - this.startY;
-        const x = e.clientX;
-        const y = e.clientY;
+        const scaledClientX = e.clientX / this.scale;
+        const scaledClientY = e.clientY / this.scale;
+
+        const width = scaledClientX - this.startX;
+        const height = scaledClientY - this.startY;
+        const x = scaledClientX;
+        const y = scaledClientY;
 
         this.ctx.strokeStyle = "black";
         
@@ -122,14 +125,16 @@ export class Canvas {
     onMouseUp = (e: any) => {
         this.isDragging = false;
         let shape: ExistingShapes;
+        const scaledClientX = e.clientX / this.scale;
+        const scaledClientY = e.clientY / this.scale;
         //@ts-ignore
         if(this.shapeType === "rect") {
             shape = {
                 type: "rect",
                 start: this.startX,
                 end: this.startY,
-                width: e.offsetX - this.startX,
-                height: e.offsetY - this.startY
+                width: scaledClientX - this.startX,
+                height: scaledClientY - this.startY
             };
         }
         else if(this.shapeType === "circle"){
@@ -143,7 +148,7 @@ export class Canvas {
             }
         }
         else {
-            this.coordinates.push({x: e.clientX, y: e.clientY});
+            this.coordinates.push({x: scaledClientX, y: scaledClientY});
             shape = {
                 type: "pen",
                 coordinates: this.coordinates
