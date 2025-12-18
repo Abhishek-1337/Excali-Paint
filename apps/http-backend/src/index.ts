@@ -1,6 +1,6 @@
 import express from 'express';
 import jwt from 'jsonwebtoken';
-import { JWT_SECRET } from '@repo/backend-common/config';
+import { REFRESH_JWT_SECRET, ACCESS_JWT_SECRET } from '@repo/backend-common/config';
 import { CreateRoomSchema, SigninUserSchema, SignupUserSchema} from "@repo/common/zod";
 import { prismaClient } from '@repo/db/client';
 import { protect } from './middlewares/AuthMiddleware';
@@ -44,11 +44,24 @@ app.post("/signup", async (req, res) => {
     });
     console.log(user);
 
-    const token = jwt.sign({userId: user.id}, JWT_SECRET);
+    const refreshToken = jwt.sign({userId: user.id}, REFRESH_JWT_SECRET,{
+        expiresIn: "7d"
+    });
+
+    const accessToken = jwt.sign({userId: user.id}, ACCESS_JWT_SECRET, {
+        expiresIn: "24h"
+    })
+
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+    //   secure: true,
+    //   sameSite: "strict",
+      path: "/auth/refresh"
+    });
 
     res.status(201).json({
         message: "User is successfully created.",
-        token
+        token: accessToken
     });
 })
 
@@ -82,9 +95,17 @@ app.post("/signin", async (req, res) => {
         return;
     }
 
-    const token = jwt.sign({userId:user.id}, JWT_SECRET);
+    const refreshToken = jwt.sign({userId:user.id}, REFRESH_JWT_SECRET);
+    const accessToken = jwt.sign({userId:user.id}, ACCESS_JWT_SECRET);
+
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true,
+        //   secure: true,
+        //   sameSite: "strict",
+          path: "/auth/refresh"
+        });
     res.status(200).json({
-        token
+        token: accessToken
     });
 });
 

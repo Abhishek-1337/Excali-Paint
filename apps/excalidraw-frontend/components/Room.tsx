@@ -34,6 +34,7 @@ const Room = ({ roomId }: {roomId: string}) => {
 
     }, []);
 
+
     return (
         <>
            <div className="flex relative h-screen w-screen">
@@ -69,12 +70,12 @@ const Room = ({ roomId }: {roomId: string}) => {
                 <div className="absolute z-10 left-10 bottom-0 ring-1 ring-gray-600/20 shadow-sm rounded-xl flex gap-2 p-2 m-4">
                     <button 
                     className="cursor-pointer border-r-2 px-3 pr-4 border-gray-300 text-lg"
-                    onClick={() => setScale(prevScale => prevScale * 0.5)}
+                    onClick={() => canvas?.setScale(0.5)}
                     >-</button>
                     <span className="border-r-2 px-3 pr-4 border-gray-300 text-gray-600">percent</span>
                     <button 
                     className="cursor-pointer px-3 pr-4 border-gray-300 text-gray-600"
-                    onClick={() => setScale(prevScale => prevScale * 2)}
+                    onClick={() => canvas?.setScale(2)}
                     >+</button>
                 </div>
            </div>

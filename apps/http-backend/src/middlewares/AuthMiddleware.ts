@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt, { JwtPayload } from 'jsonwebtoken';
-import { JWT_SECRET } from "@repo/backend-common/config";
+import { ACCESS_JWT_SECRET} from "@repo/backend-common/config";
 import { AuthRequest } from '../types';
 
 export const protect = async (req: AuthRequest, res: Response, next: NextFunction) => {
@@ -18,7 +18,7 @@ export const protect = async (req: AuthRequest, res: Response, next: NextFunctio
         })
         return;
     }
-    const decoded = await jwt.verify(token, JWT_SECRET) as JwtPayload;
+    const decoded = await jwt.verify(token, ACCESS_JWT_SECRET) as JwtPayload;
     if(!decoded) {
         return res.status(403).json({
             message: "Token is invalid"
