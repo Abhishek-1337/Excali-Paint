@@ -1,6 +1,8 @@
-"use client"
+"use client";
 
+import { RegisterUser } from "@/lib/api";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 type Form = {
@@ -29,6 +31,7 @@ const validateEmail = (email: string) => {
 const Form = () => {
     const [form, setForm] = useState<Form>(INITIAL_DATA);
         const [errors, setErrors] = useState<Error>({});
+        const router = useRouter();
     
         const validateErrors = () => {
             if(!form.username.trim()) {
@@ -97,7 +100,7 @@ const Form = () => {
                 return newObj;
             });
         }
-        const handleSubmit = () => {
+        const handleSubmit = async () => {
             const errors = validateErrors();
             if(Object.keys(errors).length > 0) {
                 console.log(errors);
@@ -108,6 +111,18 @@ const Form = () => {
                     }
                 });
                 return;
+            }
+
+            console.log(form);
+            try{
+                const res = await RegisterUser(form);
+                setForm(INITIAL_DATA);
+                router.replace("/canvas");
+            }
+            catch(ex){
+                console.log(ex);
+            }
+            finally{
             }
         }
     return (
@@ -121,6 +136,7 @@ const Form = () => {
                         type="text" 
                         name="username" 
                         placeholder="Enter username" 
+                        value={form.username}
                         className={`py-2 px-3 outline-1  rounded-lg min-w-full mt-2 text-sm pb-3 ${errors.username ? "outline-red-500": "outline-gray-800" } active:bg-blue-200`}
                         onChange = {(e) => handleSetUsername(e)}
                         />
@@ -136,6 +152,7 @@ const Form = () => {
                         type="text" 
                         name="mail" 
                         placeholder="Enter mail" 
+                        value={form.email}
                         className={`py-2 px-3 outline-1 outline-gray-800 rounded-lg min-w-full mt-2 text-md pb-3 text-sm ${errors.email ? "outline-red-500": "outline-gray-800" }`}
                         onChange = {(e) => handleSetEmail(e)}
                         />
@@ -150,6 +167,7 @@ const Form = () => {
                         <input 
                         type="password" 
                         name="password" 
+                        value={form.password}
                         placeholder="Enter password" 
                         className={`py-2 px-3 outline-1 rounded-lg min-w-full mt-2 text-sm ${errors.password ? "outline-red-500": "outline-gray-800" }`}
                         onChange = {(e) => handleSetPassword(e)}
