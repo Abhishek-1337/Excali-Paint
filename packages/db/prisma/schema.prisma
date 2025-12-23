@@ -21,7 +21,7 @@ model User {
   messages Message[]
   room      Room[]     @relation("RoomMembers")
   adminOf   Room[]    @relation("RoomAdmin")
-  refreshToken  RefreshToken[]
+  session  Session[]
 }
 
 model Room {
@@ -42,7 +42,7 @@ model Message {
   userId String
 }
 
-model RefreshToken {
+model Session {
   id        String   @id @default(uuid())
   token     String   @unique
   userId    String

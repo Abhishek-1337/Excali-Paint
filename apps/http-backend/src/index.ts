@@ -1,5 +1,5 @@
 import express from 'express';
-import jwt from 'jsonwebtoken';
+import jwt, { JwtPayload } from 'jsonwebtoken';
 import { REFRESH_JWT_SECRET, ACCESS_JWT_SECRET } from '@repo/backend-common/config';
 import { CreateRoomSchema, SigninUserSchema, SignupUserSchema} from "@repo/common/zod";
 import { prismaClient } from '@repo/db/client';
@@ -65,6 +65,8 @@ app.post("/signup", async (req, res) => {
     });
 })
 
+console.log(REFRESH_JWT_SECRET);
+
 app.post("/signin", async (req, res) => {
     const result = SigninUserSchema.safeParse(req.body);
     if(!result.success) {
@@ -77,6 +79,10 @@ app.post("/signin", async (req, res) => {
     const user = await prismaClient.user.findFirst({
         where: {
             name: result.data.name
+        },
+        include: {
+            room: true,
+            adminOf: true
         }
     });
     
@@ -102,10 +108,20 @@ app.post("/signin", async (req, res) => {
       httpOnly: true,
         //   secure: true,
         //   sameSite: "strict",
-          path: "/auth/refresh"
-        });
+          path: "/auth/refresh",
+          maxAge: 7 * 24 * 60 * 60 * 1000
+    });
+
+    res.cookie("access_token", accessToken, {
+        httpOnly: true,
+        maxAge: 720 * 60 * 1000 
+    });
     res.status(200).json({
-        token: accessToken
+        token: accessToken,
+        username: user.name,
+        email: user.email,
+        room: user.room,
+        adminOf: user.adminOf
     });
 });
 
@@ -184,6 +200,34 @@ app.get("/rooms", async (req, res) => {
         rooms
     });
 });
+
+app.post("/logout", async (req, res) => {
+    const refreshToken = req.cookies.get("refreshToken");
+
+    if(refreshToken === null) {
+        return res.status(400).json({
+            message: "Something went wrong"
+        });
+    }
+
+    const decoded = await jwt.verify(refreshToken, REFRESH_JWT_SECRET);
+    const userId = (decoded as JwtPayload).userId;
+
+    const session = await prismaClient.session.findFirst({
+        where: {
+            userId
+        }
+    });
+
+    if(session) {
+        session.revoked = true;
+        res.clearCookie("refreshToken");
+        res.clearCookie("accessToken");
+    }
+    return res.status(200).json({
+        message: "Logout successfully"
+    })
+})
 
 
 app.listen(3001);
