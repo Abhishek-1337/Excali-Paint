@@ -1,6 +1,7 @@
 "use client";
 
-import { LoginUser } from "@/lib/api";
+import { EyeIcon, EyeOffIcon} from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -22,6 +23,7 @@ const INITIAL_DATA = {
 const LoginForm = () => {
     const [form, setForm] = useState<Form>(INITIAL_DATA);
         const [errors, setErrors] = useState<Error>({});
+        const [eyePassword, setEyePassword] = useState(false);
         const router = useRouter();
     
         const validateErrors = () => {
@@ -84,8 +86,8 @@ const LoginForm = () => {
             }
 
             try{
-                const res = await LoginUser(form);
-                localStorage.setItem("token", res.token);
+                // const res = await LoginUser(form);
+                // localStorage.setItem("token", res.token);
                 router.push("/");
                 setForm(INITIAL_DATA);
                 router.replace("/canvas/1");
@@ -108,7 +110,7 @@ const LoginForm = () => {
                 name="username" 
                 placeholder="Enter username" 
                 value={form.username}
-                className={`py-2 px-3 outline-1  rounded-lg min-w-full mt-2 text-sm pb-3 ${errors.username ? "outline-red-500": "outline-gray-800" } active:bg-blue-200`}
+                className={`py-2 px-8 outline-1  rounded-lg min-w-full mt-2 text-sm ${errors.username ? "outline-red-500": "outline-gray-800" } active:bg-blue-200`}
                 onChange = {(e) => handleSetUsername(e)}
                 />
                 {
@@ -120,23 +122,38 @@ const LoginForm = () => {
                     Password 
                 </label>
                 <input 
-                type="password" 
+                type={eyePassword ? "password": "text"}
                 name="password" 
                 value={form.password}
                 placeholder="Enter password" 
-                className={`py-2 px-3 outline-1 rounded-lg min-w-full mt-2 text-sm ${errors.password ? "outline-red-500": "outline-gray-800" }`}
+                className={`py-2 px-8 outline-1 rounded-lg min-w-full mt-2 text-sm ${errors.password ? "outline-red-500": "outline-gray-800" }`}
                 onChange = {(e) => handleSetPassword(e)}
                 />
+                {
+                    !eyePassword ? (
+                    <EyeIcon 
+                    className="absolute top-10 right-1 cursor-pointer text-gray-500 h-4"
+                    onClick={() => setEyePassword(prev => !prev)}
+                    />
+                    ):
+                    <EyeOffIcon 
+                    className="absolute top-10 right-1 cursor-pointer text-gray-500 h-4"
+                    onClick={() => setEyePassword(prev => !prev)}
+                    />
+                }
                 {
                     errors.password && <p className="absolute text-red-600 text-xs pt-1">{errors.password}</p>
                 }
             </div>
             <button 
-            className="px-6 py-2 rounded-lg transition-all duration-200 font-medium bg-blue-600 text-white cursor-pointer mt-4 text-md"
+            className="px-6 py-2 rounded-full transition-all duration-200 font-medium bg-blue-600 text-white cursor-pointer mt-4 text-md hover:outline-gray-200 hover:outline-4"
             onClick={() => handleSubmit()}
             >
                 Login
             </button>
+            <p className="text-sm">Not have an account ? 
+                <Link href="/register" className="text-blue-500 hover:text-blue-400">{" "}Register</Link>
+            </p>
         </>
     );
 }
