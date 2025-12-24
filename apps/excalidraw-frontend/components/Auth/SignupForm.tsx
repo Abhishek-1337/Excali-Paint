@@ -1,16 +1,12 @@
 "use client";
 
+import useAuthContext from "@/hooks/useAuthContext";
 import { RegisterUser } from "@/lib/api";
+import { Form } from "@/types/types";
 import { EyeIcon, EyeOffIcon } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
-
-type Form = {
-    username: string;
-    email: string;
-    password: string;
-}
 
 type Error = {
     username?: string;
@@ -32,7 +28,8 @@ const validateEmail = (email: string) => {
 const SignupForm = () => {
     const [form, setForm] = useState<Form>(INITIAL_DATA);
     const [errors, setErrors] = useState<Error>({});
-    const [eyePassword, setEyePassword] = useState(false);
+    const [eyePassword, setEyePassword] = useState(true);
+    const { register } = useAuthContext();
     
         const router = useRouter();
     
@@ -115,18 +112,8 @@ const SignupForm = () => {
                 });
                 return;
             }
-
-            console.log(form);
-            try{
-                const res = await RegisterUser(form);
-                setForm(INITIAL_DATA);
-                router.replace("/canvas");
-            }
-            catch(ex){
-                console.log(ex);
-            }
-            finally{
-            }
+            register(form);
+            
         }
 
         const handleEyeClick = () => {
@@ -195,7 +182,7 @@ const SignupForm = () => {
                 }
             </div>
             <button 
-            className="px-8 py-2 rounded-full transition-all duration-200 font-medium bg-blue-600 text-white cursor-pointer mt-4 text-md"
+            className="px-8 py-2 rounded-full transition-all duration-200 font-medium bg-blue-600 text-white cursor-pointer mt-4 text-md hover:outline-gray-300 hover:outline-4"
             onClick={() => handleSubmit()}
             >
                 Register

@@ -2,8 +2,9 @@ import axios from "axios";
 
 const API_URL = 'http://localhost:3001/';
 
-const apiClient = axios.create({
-    baseURL: API_URL
+export const apiClient = axios.create({
+    baseURL: API_URL,
+    withCredentials: true
 });
 
 apiClient.interceptors.response.use(
@@ -23,11 +24,12 @@ export const RegisterUser = async (data: { username: string, email: string, pass
     return res.data;
 }
 
-export const LoginUser = async (data: { username: string, password: string}) => {
-    const reqData = {
-        name: data.username,
-        password: data.password
-    }
-    const res = await apiClient.post("signin", reqData);
+export const LoginUser = async (data: { name: string, password: string}) => {
+    const res = await apiClient.post("signin", data);
+    return res.data;
+}
+
+export const logoutUser = async () => {
+    const res = await apiClient.post("logout");
     return res.data;
 }

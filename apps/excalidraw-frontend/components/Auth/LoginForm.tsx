@@ -146,7 +146,7 @@ const LoginForm = () => {
                 }
             </div>
             <button 
-            className="px-6 py-2 rounded-full transition-all duration-200 font-medium bg-blue-600 text-white cursor-pointer mt-4 text-md hover:outline-gray-200 hover:outline-4"
+            className="px-6 py-2 rounded-full transition-all duration-200 font-medium bg-blue-600 text-white cursor-pointer mt-4 text-md hover:outline-gray-300 hover:outline-4"
             onClick={() => handleSubmit()}
             >
                 Login

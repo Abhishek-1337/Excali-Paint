@@ -11,13 +11,16 @@ const Room = ({ roomId }: {roomId: string}) => {
     const [scale, setScale] = useState<number>(1);
 
     useEffect(() => {
+        const token = localStorage.getItem("access_token");
+        if(!token) return;
+        
         const canvas = canvasRef.current;
         if (!canvas) return;
 
         const ctx = canvas.getContext("2d");
         if(!ctx) return;
 
-        const ws = new WebSocket(`${WS_URL}?token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJkMjNkYmRiNC1lMjUwLTQ4YzMtYWZhNi02MjYxMzUwYzk1MWMiLCJpYXQiOjE3NjM0MDQwMjR9.ptHkee9SAC6pzjUcAU6HVRxKA1AX28qyT8vG6jU6Fl4`);
+        const ws = new WebSocket(`${WS_URL}`, ["auth", token]);
         if(!ws) return;
 
         ws.onopen = () => {
@@ -47,9 +50,9 @@ const Room = ({ roomId }: {roomId: string}) => {
                         transform: `scale(${scale})`
                     }}
                 ></canvas>
-                <div className="absolute z-10 w-60 ring-1 ring-gray-600/20 shadow-sm rounded-xl flex gap-2 p-2 m-4">
+                <div className="absolute z-10 w-60 ring-1 ring-gray-600/20 rounded-xl flex gap-2 p-2 m-4 bg-slate-800 shadow-lg shadow-red-700/30">
                     <div 
-                    className="p-2 hover:bg-gray-400 text-gray-600 hover:text-white transition-all duration-200 rounded-lg max-h-min cursor-pointer"
+                    className="p-2 hover:bg-gray-600 text-gray-400 hover:text-white transition-all duration-200 rounded-lg max-h-min cursor-pointer"
 
                     >
                         <SquareIcon 
@@ -57,13 +60,13 @@ const Room = ({ roomId }: {roomId: string}) => {
                         className="text-inherit"
                         />
                     </div>
-                    <div className="p-2 hover:bg-gray-400 text-gray-600 hover:text-white transition-all duration-200 rounded-lg max-h-min cursor-pointer">
+                    <div className="p-2 hover:bg-gray-600 text-gray-400 hover:text-white transition-all duration-200 rounded-lg max-h-min cursor-pointer">
                         <CircleIcon
                         onClick={() => canvas?.setShapeType("circle")}
                         className="text-inherit w-6 h-6"
                         />
                     </div>
-                    <div className="p-2 hover:bg-gray-400 text-gray-600 hover:text-white transition-all duration-200 rounded-lg max-h-min cursor-pointer">
+                    <div className="p-2 hover:bg-gray-600 text-gray-400 hover:text-white transition-all duration-200 rounded-lg max-h-min cursor-pointer">
                         <PencilIcon className="text-inherit" onClick={() => canvas?.setShapeType("pen")}/>
                     </div>
                 </div>

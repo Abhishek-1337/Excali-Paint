@@ -21,4 +21,10 @@ export type pen = {
     coordinates: {x: number, y: number}[]
 }
 
+export type Form = {
+    username: string;
+    email: string;
+    password: string;
+}
+
 export type ExistingShapes =  rect | circle | pen; 
