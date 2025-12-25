@@ -8,7 +8,6 @@ import { CircleIcon, SquareIcon, PencilIcon } from "lucide-react";
 const Room = ({ roomId }: {roomId: string}) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [canvas, setCanvas] = useState<Canvas>();
-    const [scale, setScale] = useState<number>(1);
 
     useEffect(() => {
         const token = localStorage.getItem("access_token");
@@ -47,7 +46,7 @@ const Room = ({ roomId }: {roomId: string}) => {
                     height={window.innerHeight}
                     className="bg-white"
                     style={{
-                        transform: `scale(${scale})`
+                        transform: `scale(${canvas?.scale})`
                     }}
                 ></canvas>
                 <div className="absolute z-10 w-60 ring-1 ring-gray-600/20 rounded-xl flex gap-2 p-2 m-4 bg-slate-800 shadow-lg shadow-red-700/30">

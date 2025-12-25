@@ -14,7 +14,7 @@ export class Canvas {
     private x = 0;
     private radius = 0;
     private coordinates: {x: number, y: number}[] = [];
-    private scale = 1;
+    public scale = 1;
 
 
     constructor(canvas: HTMLCanvasElement, socket: WebSocket, roomId: string) {

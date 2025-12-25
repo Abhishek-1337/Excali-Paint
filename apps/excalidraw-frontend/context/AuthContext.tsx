@@ -42,9 +42,11 @@ const AuthProvider = ({children} : {children: ReactNode}) => {
                 password: data.password
             }
             const res = await LoginUser(reqData);
+            console.log(res);
             setUser(res);
             localStorage.setItem("access_token", res.token);
             setIsAuthenticated(true);
+            router.replace("/canvas/1");
         }
         catch(ex) {
 

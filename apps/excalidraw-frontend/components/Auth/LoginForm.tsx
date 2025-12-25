@@ -1,5 +1,6 @@
 "use client";
 
+import useAuthContext from "@/hooks/useAuthContext";
 import { EyeIcon, EyeOffIcon} from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -23,8 +24,9 @@ const INITIAL_DATA = {
 const LoginForm = () => {
     const [form, setForm] = useState<Form>(INITIAL_DATA);
         const [errors, setErrors] = useState<Error>({});
-        const [eyePassword, setEyePassword] = useState(false);
+        const [eyePassword, setEyePassword] = useState(true);
         const router = useRouter();
+        const { login } = useAuthContext();
     
         const validateErrors = () => {
             if(!form.username.trim()) {
@@ -86,11 +88,10 @@ const LoginForm = () => {
             }
 
             try{
+                login(form);
                 // const res = await LoginUser(form);
                 // localStorage.setItem("token", res.token);
-                router.push("/");
                 setForm(INITIAL_DATA);
-                router.replace("/canvas/1");
             }
             catch(ex){
                 console.log(ex);
