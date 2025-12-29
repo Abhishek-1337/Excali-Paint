@@ -28,7 +28,7 @@ model Room {
   id  Int @id @default(autoincrement())
   slug String 
   user User[] @relation("RoomMembers")
-  admin User @relation("RoomAdmin", fields: [adminId], references: [id])
+  admin User @relation("RoomAdmin", fields: [adminId], references: [id], onDelete: Cascade)
   adminId String
   messages Message[]
 }
@@ -49,5 +49,6 @@ model Session {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   expiresAt DateTime
   createdAt DateTime @default(now())
-  revoked   Boolean  @default(false)
+  revoked   Boolean?  @default(false)
+  revokedAt DateTime?
 }

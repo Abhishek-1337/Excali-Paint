@@ -10,7 +10,10 @@ import cors from 'cors';
 
 const app = express();
 
-app.use(cors());
+app.use(cors({
+  origin: "http://localhost:3000", 
+  credentials: true
+}));
 
 app.use(express.json());
 
@@ -56,7 +59,7 @@ app.post("/signup", async (req, res) => {
       httpOnly: true,
     //   secure: true,
     //   sameSite: "strict",
-      path: "/auth/refresh"
+      path: "/"
     });
 
     res.status(201).json({
@@ -101,6 +104,15 @@ app.post("/signin", async (req, res) => {
         return;
     }
 
+    const oldSession = await prismaClient.session.findFirst({
+        where: {
+            userId: user.id
+        },
+        orderBy: {
+
+        }
+    })
+
     const refreshToken = jwt.sign({userId:user.id}, REFRESH_JWT_SECRET);
     const accessToken = jwt.sign({userId:user.id}, ACCESS_JWT_SECRET);
 
@@ -108,7 +120,6 @@ app.post("/signin", async (req, res) => {
       httpOnly: true,
         //   secure: true,
         //   sameSite: "strict",
-          path: "/auth/refresh",
           maxAge: 7 * 24 * 60 * 60 * 1000
     });
 

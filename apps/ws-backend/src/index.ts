@@ -21,14 +21,20 @@ wss.on('connection', async function connection(ws, request) {
     return;
   }
 
-  const params = new URLSearchParams(url?.split("?")[1]);
-  const token = params.get("token");
+
+  const token = request.headers["sec-websocket-protocol"]
+  ?.split(",")[1]
+  ?.trim();
+
+  console.log(token);
+  
   if(!token){
     ws.close();
     return;
   }
 
   const decoded = await jwt.verify(token, ACCESS_JWT_SECRET);
+  console.log(decoded);
   const userId = (decoded as JwtPayload).userId;
   console.log(userId);
   if(!decoded || !userId){
