@@ -151,6 +151,83 @@ app.post("/signin", async (req, res) => {
     });
 });
 
+app.post("/refresh", async (req:AuthRequest, res) => {
+
+    const token = req.cookies.refresh_token;
+    if(!token){
+        res.status(403).json({
+            message: "Token is invalid"
+        })
+        return;
+    }
+   let userId;
+    try {
+        const decoded = await jwt.verify(token, ACCESS_JWT_SECRET) as JwtPayload;
+        userId = decoded.userId;
+    }
+    catch(ex) {
+        console.log(ex);
+        return res.status(401).json({
+            message: "Unauthorized"
+        });
+    }
+
+    const oldSession = await prismaClient.session.findFirst({
+        where: {
+            userId,
+            token: token
+        },
+        orderBy: {
+            createdAt: 'desc'
+        }
+    });
+
+    if(!oldSession) {
+        return res.status(401);
+    }
+
+    prismaClient.session.update({
+        where: {
+            id: oldSession.id
+        },
+        data: {
+            revoked: true,
+            revokedAt: new Date()
+        }
+    });
+
+    if(new Date(oldSession.expiresAt) < new Date() ) {
+        
+        return res.status(401).json({
+            message: "Session expired"
+        });
+    }
+
+    const refreshToken = jwt.sign({userId}, REFRESH_JWT_SECRET, {
+        expiresIn: '24h'
+    });
+    
+    const accessToken = jwt.sign({userId}, ACCESS_JWT_SECRET, {
+        expiresIn: '1m'
+    });
+
+    res.cookie("refresh_token", refreshToken, {
+      httpOnly: true,
+        //   secure: true,
+        //   sameSite: "strict",
+          maxAge: 7 * 24 * 60 * 60 * 1000
+    });
+
+    res.cookie("access_token", accessToken, {
+        httpOnly: true,
+        maxAge: 60 * 1000 
+    });
+
+    res.status(200).json({
+        token: accessToken
+    });
+});
+
 app.get("/room/:slug", async (req, res) => {
     const slug: string = req.params.slug;
     const room = await prismaClient.room.findFirst({
@@ -164,6 +241,18 @@ app.get("/room/:slug", async (req, res) => {
     }
 
     res.status(200).json(room);
+});
+
+app.get("/auth/me", protect, async (req: AuthRequest, res) => {
+    const user = await prismaClient.user.findFirst({
+        where: {
+            id: req.userId
+        }
+    });
+
+    res.status(200).json({
+        user
+    });
 });
 
 app.get("/chat/:roomId", async (req, res) => {

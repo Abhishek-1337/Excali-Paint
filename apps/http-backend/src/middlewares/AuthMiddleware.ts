@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from 'express';
+import {  Response, NextFunction } from 'express';
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import { ACCESS_JWT_SECRET} from "@repo/backend-common/config";
 import { AuthRequest } from '../types';
@@ -20,7 +20,7 @@ export const protect = async (req: AuthRequest, res: Response, next: NextFunctio
     }
     const decoded = await jwt.verify(token, ACCESS_JWT_SECRET) as JwtPayload;
     if(!decoded) {
-        return res.status(403).json({
+        return res.status(401).json({
             message: "Token is invalid"
         })
     }

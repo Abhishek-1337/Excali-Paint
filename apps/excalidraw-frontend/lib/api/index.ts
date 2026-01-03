@@ -10,6 +10,21 @@ export const apiClient = axios.create({
 apiClient.interceptors.response.use(
     request => request,
     async (error) => {
+        console.log(error);
+
+        const originalRequest = error.config;
+        originalRequest._retry = false;
+        if(error.response.status === 401 && !originalRequest?._retry) {
+            originalRequest._retry = true;
+           try {
+             const res = await apiClient.get("refresh");
+             localStorage.setItem("access_token", res.data.token);
+             return apiClient(originalRequest);
+           }
+           catch(ex) {
+            localStorage.removeItem("access_token");       
+           }
+        }
         return Promise.reject(error);
     }
 )
@@ -31,5 +46,10 @@ export const LoginUser = async (data: { name: string, password: string}) => {
 
 export const logoutUser = async () => {
     const res = await apiClient.post("logout");
+    return res.data;
+}
+
+export const RefreshMe = async () => {
+    const res = await apiClient.get("auth/me");
     return res.data;
 }
