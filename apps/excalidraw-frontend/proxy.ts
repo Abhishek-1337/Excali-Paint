@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 export default function proxy (req: NextRequest) {
-    const token = req.cookies.get("refreshToken")?.value;
+    const token = req.cookies.get("refresh_token")?.value;
     const { pathname } = req.nextUrl;
     console.log("chlra hai kya");
 

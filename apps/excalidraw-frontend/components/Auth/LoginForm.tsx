@@ -4,7 +4,7 @@ import useAuthContext from "@/hooks/useAuthContext";
 import { EyeIcon, EyeOffIcon} from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 type Form = {
     username: string;
@@ -26,7 +26,16 @@ const LoginForm = () => {
         const [errors, setErrors] = useState<Error>({});
         const [eyePassword, setEyePassword] = useState(true);
         const router = useRouter();
-        const { login } = useAuthContext();
+        const { login, isAuthenticated } = useAuthContext();
+
+        console.log(isAuthenticated);
+
+        useEffect(() => {
+          if (isAuthenticated) {
+            router.replace("/canvas/1");
+          }
+        }, [isAuthenticated]);
+
     
         const validateErrors = () => {
             if(!form.username.trim()) {

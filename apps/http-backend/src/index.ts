@@ -55,7 +55,7 @@ app.post("/signup", async (req, res) => {
         expiresIn: "24h"
     })
 
-    res.cookie("refreshToken", refreshToken, {
+    res.cookie("refresh_token", refreshToken, {
       httpOnly: true,
     //   secure: true,
     //   sameSite: "strict",
@@ -67,8 +67,6 @@ app.post("/signup", async (req, res) => {
         token: accessToken
     });
 })
-
-console.log(REFRESH_JWT_SECRET);
 
 app.post("/signin", async (req, res) => {
     const result = SigninUserSchema.safeParse(req.body);
@@ -109,14 +107,31 @@ app.post("/signin", async (req, res) => {
             userId: user.id
         },
         orderBy: {
-
+            createdAt: 'desc'
         }
-    })
+    });
 
-    const refreshToken = jwt.sign({userId:user.id}, REFRESH_JWT_SECRET);
-    const accessToken = jwt.sign({userId:user.id}, ACCESS_JWT_SECRET);
+    if(oldSession !== null) {
+        await prismaClient.session.update({
+            where: {
+                id: oldSession.id
+            },
+            data: {
+                revoked: true,
+                revokedAt: new Date()
+            }
+        });
+    }
 
-    res.cookie("refreshToken", refreshToken, {
+    const refreshToken = jwt.sign({userId:user.id}, REFRESH_JWT_SECRET, {
+        expiresIn: '24h'
+    });
+    
+    const accessToken = jwt.sign({userId:user.id}, ACCESS_JWT_SECRET, {
+        expiresIn: '1m'
+    });
+
+    res.cookie("refresh_token", refreshToken, {
       httpOnly: true,
         //   secure: true,
         //   sameSite: "strict",
@@ -125,7 +140,7 @@ app.post("/signin", async (req, res) => {
 
     res.cookie("access_token", accessToken, {
         httpOnly: true,
-        maxAge: 720 * 60 * 1000 
+        maxAge: 60 * 1000 
     });
     res.status(200).json({
         token: accessToken,
@@ -213,7 +228,7 @@ app.get("/rooms", async (req, res) => {
 });
 
 app.post("/logout", async (req, res) => {
-    const refreshToken = req.cookies.get("refreshToken");
+    const refreshToken = req.cookies.get("refresh_token");
 
     if(refreshToken === null) {
         return res.status(400).json({
@@ -232,8 +247,8 @@ app.post("/logout", async (req, res) => {
 
     if(session) {
         session.revoked = true;
-        res.clearCookie("refreshToken");
-        res.clearCookie("accessToken");
+        res.clearCookie("refresh_token");
+        res.clearCookie("access_token");
     }
     return res.status(200).json({
         message: "Logout successfully"
