@@ -1,17 +1,40 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+// import { Geist, Geist_Mono } from "next/font/google";
+import localFont from "next/font/local";
+
+const geistSans = localFont({
+  src: [
+    {
+      path: "../public/fonts/Geist-Regular.woff2",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "../public/fonts/Geist-Bold.woff2",
+      weight: "700",
+      style: "normal",
+    },
+  ],
+  variable: "--font-geist-mono"
+});
+
+const geistMono = localFont({
+  src: [
+    {
+      path: "../public/fonts/GeistMono-Regular.woff2",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "../public/fonts/GeistMono-Bold.woff2",
+      weight: "700",
+      style: "normal",
+    },
+  ],
+  variable: "--font-geist-mono"
+});
 import "./globals.css";
-import AuthProvider from "@/context/AuthContext";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+import { Providers } from "./providers";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -30,9 +53,9 @@ export default function RootLayout({
       > 
       <div className="min-h-screen text-gray-900">
       {/* Subtle background texture */}
-      <AuthProvider>
+      <Providers>
         {children}
-      </AuthProvider>
+      </Providers>
         
         </div>
       </body>

@@ -6,6 +6,7 @@ import { prismaClient } from '@repo/db/client';
 import { protect } from './middlewares/AuthMiddleware';
 import bcrypt from 'bcrypt';
 import { AuthRequest, Room } from './types';
+import cookieParser from "cookie-parser";
 import cors from 'cors';
 
 const app = express();
@@ -16,6 +17,7 @@ app.use(cors({
 }));
 
 app.use(express.json());
+app.use(cookieParser());
 
 app.post("/signup", async (req, res) => {
     const result = SignupUserSchema.safeParse(req.body);
@@ -60,6 +62,15 @@ app.post("/signup", async (req, res) => {
     //   secure: true,
     //   sameSite: "strict",
       path: "/"
+    });
+
+    await prismaClient.session.create({
+        data: {
+            token: refreshToken,
+            userId: user.id,
+            createdAt: new Date(),
+            expiresAt: new Date(Date.now() + 7*24*60*60*1000)
+        }
     });
 
     res.status(201).json({
@@ -142,6 +153,15 @@ app.post("/signin", async (req, res) => {
         httpOnly: true,
         maxAge: 60 * 1000 
     });
+
+    await prismaClient.session.create({
+        data: {
+            token: refreshToken,
+            userId: user.id,
+            createdAt: new Date(),
+            expiresAt: new Date(Date.now() + 7*24*60*60*1000)
+        }
+    });
     res.status(200).json({
         token: accessToken,
         username: user.name,
@@ -151,18 +171,21 @@ app.post("/signin", async (req, res) => {
     });
 });
 
-app.post("/refresh", async (req:AuthRequest, res) => {
+app.get("/refresh", async (req:AuthRequest, res) => {
+    console.log(req.cookies);
 
     const token = req.cookies.refresh_token;
     if(!token){
-        res.status(403).json({
+        res.status(401).json({
             message: "Token is invalid"
         })
         return;
     }
-   let userId;
+
+    console.log("yellow1");
+    let userId;
     try {
-        const decoded = await jwt.verify(token, ACCESS_JWT_SECRET) as JwtPayload;
+        const decoded = await jwt.verify(token, REFRESH_JWT_SECRET) as JwtPayload;
         userId = decoded.userId;
     }
     catch(ex) {
@@ -171,7 +194,8 @@ app.post("/refresh", async (req:AuthRequest, res) => {
             message: "Unauthorized"
         });
     }
-
+    console.log("yellow2");
+    
     const oldSession = await prismaClient.session.findFirst({
         where: {
             userId,
@@ -181,10 +205,14 @@ app.post("/refresh", async (req:AuthRequest, res) => {
             createdAt: 'desc'
         }
     });
-
+    
     if(!oldSession) {
-        return res.status(401);
+        console.log("yellow inbetween");
+        return res.status(401).json({
+            message: "failed"
+        });
     }
+    console.log("yellow3");
 
     prismaClient.session.update({
         where: {
@@ -223,6 +251,17 @@ app.post("/refresh", async (req:AuthRequest, res) => {
         maxAge: 60 * 1000 
     });
 
+    await prismaClient.session.create({
+        data: {
+            token: refreshToken,
+            userId: userId,
+            createdAt: new Date(),
+            expiresAt: new Date(Date.now() + 7*24*60*60*1000)
+        }
+    });
+
+    console.log("yellow");
+
     res.status(200).json({
         token: accessToken
     });
@@ -240,7 +279,7 @@ app.get("/room/:slug", async (req, res) => {
         return;
     }
 
-    res.status(200).json(room);
+    return res.status(200).json(room);
 });
 
 app.get("/auth/me", protect, async (req: AuthRequest, res) => {

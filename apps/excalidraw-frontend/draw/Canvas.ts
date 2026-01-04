@@ -1,4 +1,4 @@
-import { getAllMessages } from "@/lib/api/canvas";
+import { getAllMessages, getAllMessagesForUser } from "@/lib/api/canvas";
 import { ExistingShapes, pen } from "@/types/types";
 
 export class Canvas {
@@ -15,15 +15,17 @@ export class Canvas {
     private radius = 0;
     private coordinates: {x: number, y: number}[] = [];
     public scale = 1;
+    public userId;
 
 
-    constructor(canvas: HTMLCanvasElement, socket: WebSocket, roomId: string) {
+    constructor(canvas: HTMLCanvasElement, socket: WebSocket, roomId?: string, userId?: string) {
         this.canvas = canvas;
         this.ctx = this.canvas.getContext("2d")!;
         this.socket = socket;
         this.roomId = roomId;
         this.init();
         this.initMouseHandlers();
+        this.userId = userId;
     }
 
     async init() {
@@ -41,15 +43,28 @@ export class Canvas {
                 this.render();
             }
         }
-
-        const res = await getAllMessages(this.roomId);
-        if(res && !res.error) {
-            if(res.messages && res.messages.length !== 0) {
-            //@ts-ignore
-                res.messages.forEach((obj) => {
-                    const parsedShape = JSON.parse(obj.message);
-                    this.existingShapes.push(parsedShape);
-                });
+        if(this.roomId !== undefined) {
+            const res = await getAllMessages(this.roomId);
+            if(res && !res.error) {
+                if(res.messages && res.messages.length !== 0) {
+                //@ts-ignore
+                    res.messages.forEach((obj) => {
+                        const parsedShape = JSON.parse(obj.message);
+                        this.existingShapes.push(parsedShape);
+                    });
+                }
+            }
+        }
+        else if(this.userId !== undefined){
+            const res = await getAllMessagesForUser(this.userId);
+            if(res && !res.error) {
+                if(res.messages && res.messages.length !== 0) {
+                //@ts-ignore
+                    res.messages.forEach((obj) => {
+                        const parsedShape = JSON.parse(obj.message);
+                        this.existingShapes.push(parsedShape);
+                    });
+                }
             }
         }
 

@@ -7,27 +7,65 @@ export const apiClient = axios.create({
     withCredentials: true
 });
 
-apiClient.interceptors.response.use(
-    request => request,
-    async (error) => {
-        console.log(error);
+let isRefreshing = false;
+let refreshQueue: ((token: string) => void)[] = [];
 
-        const originalRequest = error.config;
-        originalRequest._retry = false;
-        if(error.response.status === 401 && !originalRequest?._retry) {
-            originalRequest._retry = true;
-           try {
-             const res = await apiClient.get("refresh");
-             localStorage.setItem("access_token", res.data.token);
-             return apiClient(originalRequest);
-           }
-           catch(ex) {
-            localStorage.removeItem("access_token");       
-           }
-        }
-        return Promise.reject(error);
+const processQueue = (token: string) => {
+  refreshQueue.forEach(cb => cb(token));
+  refreshQueue = [];
+};
+
+apiClient.interceptors.response.use(
+  response => response,
+
+  async error => {
+
+    const originalRequest = error.config;
+    const { status, data } = error.response;
+
+    if (status !== 401) {
+      return Promise.reject(error);
     }
-)
+
+    if (originalRequest._retry) {
+      return Promise.reject(error);
+    }
+
+    originalRequest._retry = true;
+
+    if (isRefreshing) {
+      return new Promise(resolve => {
+        refreshQueue.push((token: string) => {
+          originalRequest.headers.Authorization = `Bearer ${token}`;
+          resolve(apiClient(originalRequest));
+        });
+      });
+    }
+
+    isRefreshing = true;
+
+    try {
+      const res = await apiClient.get("refresh");
+
+      const newToken = res.data.accessToken;
+      localStorage.setItem("access_token", newToken);
+
+      processQueue(newToken);
+
+      originalRequest.headers.Authorization = `Bearer ${newToken}`;
+      return apiClient(originalRequest);
+
+    } catch (refreshError) {
+      localStorage.removeItem("access_token");
+      // window.location.href = "/login";
+      return Promise.reject(refreshError);
+
+    } finally {
+      isRefreshing = false;
+    }
+  }
+);
+
 
 export const RegisterUser = async (data: { username: string, email: string, password: string}) => {
     const reqData = {
