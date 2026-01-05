@@ -356,7 +356,7 @@ app.get("/rooms", async (req, res) => {
 });
 
 app.post("/logout", async (req, res) => {
-    const refreshToken = req.cookies.get("refresh_token");
+    const refreshToken = req.cookies.refresh_token;
 
     if(refreshToken === null) {
         return res.status(400).json({
@@ -369,15 +369,15 @@ app.post("/logout", async (req, res) => {
 
     const session = await prismaClient.session.findFirst({
         where: {
-            userId
+            token: refreshToken
         }
     });
 
     if(session) {
         session.revoked = true;
-        res.clearCookie("refresh_token");
-        res.clearCookie("access_token");
     }
+    res.clearCookie("refresh_token");
+    res.clearCookie("access_token");
     return res.status(200).json({
         message: "Logout successfully"
     })

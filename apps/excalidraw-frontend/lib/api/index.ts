@@ -15,6 +15,16 @@ const processQueue = (token: string) => {
   refreshQueue = [];
 };
 
+apiClient.interceptors.request.use(request => {
+  const accessToken = localStorage.getItem('access_token');
+  if (accessToken) {
+    request.headers['Authorization'] = `Bearer ${accessToken}`;
+  }
+  return request;
+}, error => {
+  return Promise.reject(error);
+});
+
 apiClient.interceptors.response.use(
   response => response,
 

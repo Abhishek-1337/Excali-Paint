@@ -1,8 +1,9 @@
-"use client"
-import {  LoginUser, logoutUser, RegisterUser } from "@/lib/api";
+"use client";
+
+import {  LoginUser, logoutUser, RefreshMe, RegisterUser } from "@/lib/api";
 import { Form } from "@/types/types";
 import { useRouter } from "next/navigation";
-import { createContext, ReactNode, useMemo, useState } from "react";
+import { createContext, ReactNode, useEffect, useMemo, useState } from "react";
 
 type loginData = { username: string, password: string};
 
@@ -18,6 +19,27 @@ const AuthProvider = ({children} : {children: ReactNode}) => {
     const [user, setUser] = useState(null);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const router = useRouter();
+
+    useEffect(() => {
+        async function initAuth() {
+            try {
+                const res = await RefreshMe();
+                const token = localStorage.getItem("access_token");
+                setUser({
+                    ...res.user,
+                    token
+                });
+
+            }
+            catch(ex) {
+                console.log(ex);
+            }
+        }
+
+        initAuth();
+    }, []);
+
+    console.log(user);
 
     const register = async (form: Form) => {
         try{
@@ -46,7 +68,6 @@ const AuthProvider = ({children} : {children: ReactNode}) => {
             setUser(res);
             localStorage.setItem("access_token", res.token);
             setIsAuthenticated(true);
-            router.replace("/canvas/1");
         }
         catch(ex) {
 
@@ -56,12 +77,12 @@ const AuthProvider = ({children} : {children: ReactNode}) => {
 
     const logout = async () => {
         try {
-            const res = await logoutUser();
+            await logoutUser();
             localStorage.removeItem("access_token");
-            router.replace("/");
+            router.replace("/login");
         }
         catch(ex) {
-
+            console.log(ex);
         }
     }
 

@@ -5,7 +5,7 @@ import { AuthRequest } from '../types';
 
 export const protect = async (req: AuthRequest, res: Response, next: NextFunction) => {
     if(!req.headers.authorization || !req.headers.authorization.startsWith('Bearer')) {
-        res.status(403).json({
+        res.status(401).json({
             message: "Token is invalid."
         });
         return;
@@ -13,7 +13,7 @@ export const protect = async (req: AuthRequest, res: Response, next: NextFunctio
     
     const token = req.headers.authorization.split(" ")[1];
     if(!token){
-        res.status(403).json({
+        res.status(401).json({
             message: "Token is invalid"
         })
         return;

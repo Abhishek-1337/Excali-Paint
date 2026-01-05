@@ -11,7 +11,7 @@ export default function proxy (req: NextRequest) {
     );
 
     if (isPublicRoute && token) {
-      return NextResponse.redirect(new URL("/canvas/1", req.url));
+      return NextResponse.redirect(new URL("/canvas", req.url));
     }
 
     if (!isPublicRoute && !token) {

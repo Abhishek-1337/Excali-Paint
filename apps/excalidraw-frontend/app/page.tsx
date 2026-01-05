@@ -3,9 +3,11 @@
 import React, { useState, useEffect } from 'react';
 import { Pencil, Sparkles, Palette, Users, Zap, Download } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 export default function DrawingAppLanding() {
   const [scrollY, setScrollY] = useState(0);
+  const router = useRouter();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -36,10 +38,16 @@ export default function DrawingAppLanding() {
             <span className="text-2xl font-bold tracking-tight">ExcaliPaint</span>
           </div>
           <div className="flex gap-4">
-            <button className="px-6 py-2 rounded-lg hover:bg-blue-800 hover:text-white transition-all duration-200 font-medium bg-blue-600 text-white cursor-pointer">
+            <button 
+            className="px-6 py-2 rounded-lg hover:bg-blue-800 hover:text-white transition-all duration-200 font-medium bg-blue-600 text-white cursor-pointer"
+            onClick={() => router.push("/login")}
+            >
               Sign in
             </button>
-            <button className="px-6 py-2 border-2 border-gray-900 rounded-lg hover:bg-gray-300 transition-all duration-200 font-medium cursor-pointer">
+            <button 
+            className="px-6 py-2 border-2 border-gray-900 rounded-lg hover:bg-gray-300 transition-all duration-200 font-medium cursor-pointer"
+            onClick={() => router.push("/register")}
+            >
               <Link href="/register">Sign up</Link>
             </button>
           </div>

@@ -3,11 +3,15 @@
 import { WS_URL } from "@/lib/config";
 import { useEffect, useRef, useState } from "react";
 import { Canvas } from "@/draw/Canvas";
-import { CircleIcon, SquareIcon, PencilIcon } from "lucide-react";
+import { CircleIcon, SquareIcon, PencilIcon, UserRoundMinus } from "lucide-react";
+import useAuthContext from "@/hooks/useAuthContext";
 
-const Room = ({ roomId }: {roomId: string}) => {
+const Room = ({ roomId, userId }: {roomId?: string, userId?: string}) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [canvas, setCanvas] = useState<Canvas>();
+    const [isMenuBar, setIsMenuBar] = useState<boolean>(false);
+    const [logoutLoading, setLogoutLoading] = useState(false);
+    const { logout } = useAuthContext();
 
     useEffect(() => {
         const token = localStorage.getItem("access_token");
@@ -31,11 +35,16 @@ const Room = ({ roomId }: {roomId: string}) => {
             }))
         };
 
-        const g = new Canvas(canvas, ws, roomId);
+        const g = new Canvas(canvas, ws, roomId, userId);
         setCanvas(g);
 
     }, []);
 
+    const handleLogout = async () => {
+        setLogoutLoading(true);
+        logout();
+        setLogoutLoading(false);
+    }
 
     return (
         <>
@@ -49,6 +58,29 @@ const Room = ({ roomId }: {roomId: string}) => {
                         transform: `scale(${canvas?.scale})`
                     }}
                 ></canvas>
+                <div 
+                className="absolute right-0 m-4 mr-6 cursor-pointer z-10 flex flex-col gap-0.5 p-2"
+                onClick={() => setIsMenuBar(prev => !prev)}
+                >
+                    <div className="h-1 w-1 rounded-full bg-black"></div>
+                    <div className="h-1 w-1 rounded-full bg-black"></div>
+                    <div className="h-1 w-1 rounded-full bg-black"></div>
+                </div>
+                {/* Logout button */}
+                {
+                    isMenuBar && (
+                        <div className="bg-gray-300 absolute top-10 right-10 p-2 rounded-lg text-sm">
+                            <div 
+                            className="cursor-pointer bg-gray-300 hover:bg-gray-400 py-2 px-4 rounded-sm text-black hover:text-gray-200 font-semibold"
+                            onClick={handleLogout}
+                            >
+                                {
+                                    logoutLoading ? "Logout..." : "Logout"
+                                }
+                            </div>
+                        </div>
+                    )
+                }
                 <div className="absolute z-10 w-60 ring-1 ring-gray-600/20 rounded-xl flex gap-2 p-2 m-4 bg-slate-800 shadow-lg shadow-red-700/30">
                     <div 
                     className="p-2 hover:bg-gray-600 text-gray-400 hover:text-white transition-all duration-200 rounded-lg max-h-min cursor-pointer"
