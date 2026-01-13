@@ -135,11 +135,11 @@ app.post("/signin", async (req, res) => {
     }
 
     const refreshToken = jwt.sign({userId:user.id}, REFRESH_JWT_SECRET, {
-        expiresIn: '24h'
+        expiresIn: '7d'
     });
     
     const accessToken = jwt.sign({userId:user.id}, ACCESS_JWT_SECRET, {
-        expiresIn: '1m'
+        expiresIn: '24h'
     });
 
     res.cookie("refresh_token", refreshToken, {
@@ -151,7 +151,7 @@ app.post("/signin", async (req, res) => {
 
     res.cookie("access_token", accessToken, {
         httpOnly: true,
-        maxAge: 60 * 1000 
+        maxAge: 24*60*60 * 1000 
     });
 
     await prismaClient.session.create({
@@ -232,11 +232,11 @@ app.get("/refresh", async (req:AuthRequest, res) => {
     }
 
     const refreshToken = jwt.sign({userId}, REFRESH_JWT_SECRET, {
-        expiresIn: '24h'
+        expiresIn: '7d'
     });
     
     const accessToken = jwt.sign({userId}, ACCESS_JWT_SECRET, {
-        expiresIn: '1m'
+        expiresIn: '24h'
     });
 
     res.cookie("refresh_token", refreshToken, {
@@ -248,7 +248,7 @@ app.get("/refresh", async (req:AuthRequest, res) => {
 
     res.cookie("access_token", accessToken, {
         httpOnly: true,
-        maxAge: 60 * 1000 
+        maxAge: 24*60*60 * 1000 
     });
 
     await prismaClient.session.create({
@@ -318,6 +318,20 @@ app.get("/chat/:roomId", async (req, res) => {
     });
 });
 
+app.get("/chat/user/:userId", async (req, res) => {
+    const userId: number = Number(req.params.userId);
+    const messages = await prismaClient.message.findFirst({
+        where: {
+            id: userId,
+            roomId: undefined
+        }
+    });
+
+    res.status(200).json({
+        messages
+    });
+});
+
 app.post("/create-room", protect, async (req: AuthRequest, res) => {
     const result = CreateRoomSchema.safeParse(req.body);
     if(!result.success) {
@@ -353,6 +367,21 @@ app.get("/rooms", async (req, res) => {
     res.status(200).json({
         rooms
     });
+});
+
+app.post("/canvas/:userId", async (req, res) => {
+    const userId = req.params.userId;
+    const { canvas } = req.body;
+    const message = await prismaClient.message.create({
+        data: {
+            userId,
+            message: canvas
+        }
+    });
+
+    return res.status(201).json({
+        message: "Canvas created"
+    })
 });
 
 app.post("/logout", async (req, res) => {

@@ -36,8 +36,8 @@ model Room {
 model Message {
   id  Int  @id @default(autoincrement())
   message String 
-  room  Room  @relation(fields: [roomId], references: [id])
-  roomId Int 
+  room  Room?  @relation(fields: [roomId], references: [id])
+  roomId Int? 
   user User @relation(fields: [userId], references: [id])
   userId String
 }

@@ -1,5 +1,7 @@
 import axios from "axios";
 import { BACKEND_URL } from "../config";
+import { apiClient } from ".";
+import { ExistingShapes } from "@/types/types";
 
 export async function getAllMessages(roomId: string) {
     try{
@@ -21,7 +23,7 @@ export async function getAllMessages(roomId: string) {
 
 export async function getAllMessagesForUser(userId: string) {
     try{
-        const res = await axios.get(`${BACKEND_URL}/chat/${Number(userId)}`);
+        const res = await axios.get(`${BACKEND_URL}/chat/user/${Number(userId)}`);
         const messages = res.data.messages;
         return {
             error: false,
@@ -35,4 +37,9 @@ export async function getAllMessagesForUser(userId: string) {
         }
     }
         
+}
+
+export const postCanvas = async (canvas: ExistingShapes, userId: string) => {
+    const res = await apiClient.post(`${BACKEND_URL}/canvas/${userId}`, canvas); 
+    return res.data;
 }
