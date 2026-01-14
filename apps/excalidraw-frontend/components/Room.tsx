@@ -5,12 +5,14 @@ import { useEffect, useRef, useState } from "react";
 import { Canvas } from "@/draw/Canvas";
 import { CircleIcon, SquareIcon, PencilIcon, UserRoundMinus } from "lucide-react";
 import useAuthContext from "@/hooks/useAuthContext";
+import RoomModal from "./ui/RoomModal";
 
 const Room = ({ roomId, userId }: {roomId?: string, userId?: string}) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [canvas, setCanvas] = useState<Canvas>();
     const [isMenuBar, setIsMenuBar] = useState<boolean>(false);
     const [logoutLoading, setLogoutLoading] = useState(false);
+    const [isModal, setIsModal] = useState(false);
     const { logout } = useAuthContext();
 
     useEffect(() => {
@@ -82,7 +84,13 @@ const Room = ({ roomId, userId }: {roomId?: string, userId?: string}) => {
                     isMenuBar && (
                         <div className="bg-gray-300 absolute top-10 right-10 p-2 rounded-lg text-sm">
                             <div 
-                            className="cursor-pointer bg-gray-300 hover:bg-gray-400 py-2 px-4 rounded-sm text-black hover:text-gray-200 font-semibold"
+                            className="cursor-pointer bg-gray-300 hover:bg-gray-400 py-2 px-4 rounded-sm text-gray-600 hover:text-gray-200 font-semibold"
+                            onClick={() => setIsModal(true)}
+                            >
+                                Create a room
+                            </div>
+                            <div 
+                            className="cursor-pointer bg-gray-300 hover:bg-gray-400 py-2 px-4 rounded-sm text-gray-600 hover:text-gray-200 font-semibold"
                             onClick={handleLogout}
                             >
                                 {
@@ -124,6 +132,9 @@ const Room = ({ roomId, userId }: {roomId?: string, userId?: string}) => {
                     >+</button>
                 </div>
            </div>
+           {
+            isModal && <RoomModal setIsModal={setIsModal}/>
+           }
         </>
     );
 };
