@@ -12,16 +12,19 @@ export const AuthContext = createContext({
     isAuthenticated: false,
     register: (data: Form) => {},
     login: (data: loginData) => {},
-    logout: () => {}
+    logout: () => {},
+    loading: false
 });
 
 const AuthProvider = ({children} : {children: ReactNode}) => {
     const [user, setUser] = useState(null);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [loading, setLoading] = useState<boolean>(false);
     const router = useRouter();
 
     useEffect(() => {
         async function initAuth() {
+            setLoading(true);
             try {
                 const res = await RefreshMe();
                 const token = localStorage.getItem("access_token");
@@ -29,6 +32,7 @@ const AuthProvider = ({children} : {children: ReactNode}) => {
                     ...res.user,
                     token
                 });
+                setLoading(false);
 
             }
             catch(ex) {
@@ -39,16 +43,15 @@ const AuthProvider = ({children} : {children: ReactNode}) => {
         initAuth();
     }, []);
 
-    console.log(user);
-
     const register = async (form: Form) => {
+        setLoading(true);
         try{
             const res = await RegisterUser(form);
-            console.log(res);
             setUser(res);
             localStorage.setItem("access_token", res.token);
             setIsAuthenticated(true);
             router.replace("/canvas/1");
+            setLoading(false);
         }
         catch(ex){
             console.log(ex);
@@ -58,16 +61,18 @@ const AuthProvider = ({children} : {children: ReactNode}) => {
     }
 
     const login = async (data: loginData)=> {
+        setLoading(true);
         try{
             const reqData = {
                 name: data.username,
                 password: data.password
             }
             const res = await LoginUser(reqData);
-            console.log(res);
+
             setUser(res);
             localStorage.setItem("access_token", res.token);
             setIsAuthenticated(true);
+            setLoading(false);
         }
         catch(ex) {
 
@@ -92,7 +97,8 @@ const AuthProvider = ({children} : {children: ReactNode}) => {
             isAuthenticated,
             register,
             login,
-            logout
+            logout,
+            loading
         }
     }, [user]);
     return (

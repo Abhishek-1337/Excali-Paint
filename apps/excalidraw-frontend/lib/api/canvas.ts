@@ -23,7 +23,7 @@ export async function getAllMessages(roomId: string) {
 
 export async function getAllMessagesForUser(userId: string) {
     try{
-        const res = await axios.get(`${BACKEND_URL}/chat/user/${Number(userId)}`);
+        const res = await axios.get(`${BACKEND_URL}/chat/user/${userId}`);
         const messages = res.data.messages;
         return {
             error: false,

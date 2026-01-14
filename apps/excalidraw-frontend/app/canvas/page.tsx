@@ -4,16 +4,23 @@ import Room from "@/components/Room";
 import useAuthContext from "@/hooks/useAuthContext";
 
 const Root = () => {
-    const { user } = useAuthContext();
-    if(user === null) {
+    const { user, loading } = useAuthContext();
+    console.log(user);
+    if(user === null && loading) {
         return (
-            <>Some error</>
+            <>Loading...</>
+        )
+    }
+    
+    if(user === null && !loading) {
+        return (
+            <>Some error...</>
         )
     }
    
     return (
-        //@ts-ignore
-        <Room userId = {user.id}/>
+            //@ts-ignore
+            <Room userId = {user.id}/>
     );
 };
 

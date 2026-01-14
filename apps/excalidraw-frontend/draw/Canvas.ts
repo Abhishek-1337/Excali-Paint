@@ -1,4 +1,4 @@
-import { getAllMessages, getAllMessagesForUser } from "@/lib/api/canvas";
+import { getAllMessages, getAllMessagesForUser, postCanvas } from "@/lib/api/canvas";
 import { ExistingShapes, pen } from "@/types/types";
 
 export class Canvas {
@@ -15,35 +15,34 @@ export class Canvas {
     private radius = 0;
     private coordinates: {x: number, y: number}[] = [];
     public scale = 1;
-    public userId;
+    private userId: string | null = "";
 
 
-    constructor(canvas: HTMLCanvasElement, socket: WebSocket, roomId?: string, userId?: string) {
+    constructor(canvas: HTMLCanvasElement, socket: WebSocket | null, roomId: string | null, userId: string | null) {
         this.canvas = canvas;
         this.ctx = this.canvas.getContext("2d")!;
         this.socket = socket;
         this.roomId = roomId;
+        this.userId = userId;
         this.init();
         this.initMouseHandlers();
-        this.userId = userId;
     }
 
     async init() {
-
-        console.log(this.existingShapes);
-
-        this.socket.onmessage = (event) => {
-            const parsedData = JSON.parse(event.data);
-            if(parsedData.roomId === Number(this.roomId)) {
-                const parsedShape = JSON.parse(parsedData.message);
-                this.existingShapes.push(
-                    parsedShape
-                );
-                // this.clearCanvas();
-                this.render();
+        if(this.socket !== null ) {
+            this.socket.onmessage = (event) => {
+                const parsedData = JSON.parse(event.data);
+                if(parsedData.roomId === Number(this.roomId)) {
+                    const parsedShape = JSON.parse(parsedData.message);
+                    this.existingShapes.push(
+                        parsedShape
+                    );
+                    // this.clearCanvas();
+                    this.render();
+                }
             }
         }
-        if(this.roomId !== undefined) {
+        if(this.roomId !== null) {
             const res = await getAllMessages(this.roomId);
             if(res && !res.error) {
                 if(res.messages && res.messages.length !== 0) {
@@ -55,7 +54,7 @@ export class Canvas {
                 }
             }
         }
-        else if(this.userId !== undefined){
+        else if(this.userId){
             const res = await getAllMessagesForUser(this.userId);
             if(res && !res.error) {
                 if(res.messages && res.messages.length !== 0) {
@@ -171,11 +170,23 @@ export class Canvas {
         }
 
         this.existingShapes.push(shape);
-        this.socket.send(JSON.stringify({
-            type: "chat",
-            roomId: Number(this.roomId),
-            message: JSON.stringify(shape)
-        }));
+        if(this.roomId !== null) {
+            if(this.socket !== null) {
+                this.socket.send(JSON.stringify({
+                    type: "chat",
+                    roomId: Number(this.roomId),
+                    message: JSON.stringify(shape)
+                }));
+            }
+        }
+        else if(this.userId !== null) {
+            try {
+                postCanvas(shape, this.userId);
+            }
+            catch(ex) {
+                console.log(ex);
+            }
+        }
 
         this.coordinates = [];
     };        
@@ -268,5 +279,11 @@ export class Canvas {
         this.canvas.addEventListener("mousemove", this.onMouseMove);
         this.canvas.addEventListener("mousedown", this.onMouseDown);
         this.canvas.addEventListener("mouseup", this.onMouseUp);
+    }
+
+    destroy() {
+        this.canvas.removeEventListener("mouseup", this.onMouseUp);
+        this.canvas.removeEventListener("mousedown", this.onMouseDown);
+        this.canvas.removeEventListener("mousemove", this.onMouseMove);
     }
 }

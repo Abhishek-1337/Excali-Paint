@@ -18,7 +18,17 @@ export const protect = async (req: AuthRequest, res: Response, next: NextFunctio
         })
         return;
     }
-    const decoded = await jwt.verify(token, ACCESS_JWT_SECRET) as JwtPayload;
+
+    let decoded;
+    try{
+        decoded = await jwt.verify(token, ACCESS_JWT_SECRET) as JwtPayload;
+    }
+    catch(ex) {
+        res.status(401).json({
+            message: "Unauthorized"
+        });
+        return;
+    }
     if(!decoded) {
         return res.status(401).json({
             message: "Token is invalid"

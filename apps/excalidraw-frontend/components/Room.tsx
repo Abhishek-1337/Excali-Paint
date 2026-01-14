@@ -15,29 +15,40 @@ const Room = ({ roomId, userId }: {roomId?: string, userId?: string}) => {
 
     useEffect(() => {
         const token = localStorage.getItem("access_token");
+        let g;
         if(!token) return;
         
-        const canvas = canvasRef.current;
-        if (!canvas) return;
+        const canva = canvasRef.current;
+        if (!canva) return;
 
-        const ctx = canvas.getContext("2d");
+        const ctx = canva.getContext("2d");
         if(!ctx) return;
 
-        const ws = new WebSocket(`${WS_URL}`, ["auth", token]);
-        if(!ws) return;
+        if(roomId) {
+            const ws = new WebSocket(`${WS_URL}`, ["auth", token]);
+            if(!ws) return;
 
-        ws.onopen = () => {
-            console.log("Socket connected");
-            ws.send(JSON.stringify({
-                type: "join-room",
-                roomId: Number(roomId)
+            ws.onopen = () => {
+                console.log("Socket connected");
+                ws.send(JSON.stringify({
+                    type: "join-room",
+                    roomId: Number(roomId)
 
-            }))
-        };
+                }))
+            };
 
-        const g = new Canvas(canvas, ws, roomId, userId);
-        setCanvas(g);
+            g = new Canvas(canva, ws, roomId, null);
+            setCanvas(g);
+        }
+        else{
+            g = new Canvas(canva, null, null, userId ? userId : null);
+            setCanvas(g);
+        }
 
+        
+        return () => {
+            g.destroy();
+        }
     }, []);
 
     const handleLogout = async () => {
