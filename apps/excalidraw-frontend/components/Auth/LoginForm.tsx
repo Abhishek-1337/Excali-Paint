@@ -28,11 +28,9 @@ const LoginForm = () => {
         const router = useRouter();
         const { login, isAuthenticated } = useAuthContext();
 
-        console.log(isAuthenticated);
-
         useEffect(() => {
           if (isAuthenticated) {
-            router.replace("/canvas/1");
+            router.replace("/canvas");
           }
         }, [isAuthenticated]);
 

@@ -4,10 +4,12 @@ import React, { useState, useEffect } from 'react';
 import { Pencil, Sparkles, Palette, Users, Zap, Download } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import useAuthContext from '@/hooks/useAuthContext';
 
 export default function DrawingAppLanding() {
   const [scrollY, setScrollY] = useState(0);
   const router = useRouter();
+  const {isAuthenticated} = useAuthContext();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -22,6 +24,11 @@ export default function DrawingAppLanding() {
   }, []);
 
   const parallaxOffset = scrollY * 0.3;
+
+  const handleClick = () => {
+    const route = isAuthenticated ? "/canvas" : "/login";
+    router.push(route);
+  }
 
   return (
     <>
@@ -81,12 +88,15 @@ export default function DrawingAppLanding() {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-20">
-              <button className="px-8 py-4 bg-gray-900 text-white rounded-lg text-lg font-medium hover:bg-gray-800 transition-all duration-200 hover:shadow-lg">
+              <button 
+              className="px-8 py-4 bg-gray-900 text-white rounded-lg text-lg font-medium hover:bg-gray-700 transition-all duration-200 hover:shadow-lg cursor-pointer"
+              onClick={handleClick}
+              >
                 Start Creating
               </button>
-              <button className="px-8 py-4 border-2 border-gray-900 rounded-lg text-lg font-medium hover:bg-gray-50 transition-all duration-200">
+              {/* <button className="px-8 py-4 border-2 border-gray-900 rounded-lg text-lg font-medium hover:bg-gray-50 transition-all duration-200">
                 View Examples
-              </button>
+              </button> */}
             </div>
 
             {/* Drawing preview mockup */}

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { X, Users, Lock, Globe, Copy, Check } from 'lucide-react';
+import { createRoom } from '@/lib/api';
 
 export default function RoomModal({setIsModal}: { setIsModal: React.Dispatch<React.SetStateAction<boolean>>}) {
   const [isOpen, setIsOpen] = useState(true);
@@ -9,9 +10,15 @@ export default function RoomModal({setIsModal}: { setIsModal: React.Dispatch<Rea
   const [roomCreated, setRoomCreated] = useState(false);
   const generatedLink = 'https://sketchflow.app/room/abc-xyz-123';
 
-  const handleCreate = () => {
+  const handleCreate = async () => {
     if (roomName.trim()) {
-      setRoomCreated(true);
+      try {
+        await createRoom(roomName);
+        setRoomCreated(true);
+      }
+      catch(ex) {
+        console.log(ex);
+      }
     }
   };
 

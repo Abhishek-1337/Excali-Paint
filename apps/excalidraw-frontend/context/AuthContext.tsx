@@ -73,6 +73,7 @@ const AuthProvider = ({children} : {children: ReactNode}) => {
             localStorage.setItem("access_token", res.token);
             setIsAuthenticated(true);
             setLoading(false);
+            router.replace("/canvas/");
         }
         catch(ex) {
 

@@ -57,7 +57,7 @@ apiClient.interceptors.response.use(
     try {
       const res = await apiClient.get("refresh");
 
-      const newToken = res.data.accessToken;
+      const newToken = res.data.token;
       localStorage.setItem("access_token", newToken);
 
       processQueue(newToken);
@@ -100,4 +100,14 @@ export const logoutUser = async () => {
 export const RefreshMe = async () => {
     const res = await apiClient.get("auth/me");
     return res.data;
+}
+
+export const createRoom = async (slug: string) => {
+  const res = await apiClient.post("create-room", {slug});
+  return res.data;
+}
+
+export const getRoom = async (slug: string) => {
+  const res = await apiClient.get(`room/${slug}`);
+  return res.data;
 }
