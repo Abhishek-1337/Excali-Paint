@@ -18,7 +18,7 @@ export class Canvas {
     private userId: string | null = "";
 
 
-    constructor(canvas: HTMLCanvasElement, socket: WebSocket | null, roomId: string | null, userId: string | null) {
+    constructor(canvas: any, socket: WebSocket | null, roomId: string | null, userId: string | null) {
         this.canvas = canvas;
         this.ctx = this.canvas.getContext("2d")!;
         this.socket = socket;
@@ -238,6 +238,7 @@ export class Canvas {
            ctx.scale(this.scale, this.scale);
 
            this.drawShapes();
+           console.log(this.existingShapes);
     }   
 
 
@@ -274,14 +275,25 @@ export class Canvas {
         });
     }
 
+    resize = () => {
+            this.canvas.width = window.innerWidth;
+            this.canvas.height = window.innerHeight;  
 
-    initMouseHandlers() {
-        this.canvas.addEventListener("mousemove", this.onMouseMove);
-        this.canvas.addEventListener("mousedown", this.onMouseDown);
-        this.canvas.addEventListener("mouseup", this.onMouseUp);
+            this.clearCanvas();
+            this.render();
     }
 
-    destroy() {
+        
+        
+        initMouseHandlers() {
+            window.addEventListener("resize", this.resize);
+            this.canvas.addEventListener("mousemove", this.onMouseMove);
+            this.canvas.addEventListener("mousedown", this.onMouseDown);
+            this.canvas.addEventListener("mouseup", this.onMouseUp);
+        }
+        
+        destroy() {
+        window.addEventListener("resize", this.resize);
         this.canvas.removeEventListener("mouseup", this.onMouseUp);
         this.canvas.removeEventListener("mousedown", this.onMouseDown);
         this.canvas.removeEventListener("mousemove", this.onMouseMove);
