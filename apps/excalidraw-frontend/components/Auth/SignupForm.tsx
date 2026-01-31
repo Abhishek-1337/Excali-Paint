@@ -120,9 +120,9 @@ const SignupForm = () => {
             setEyePassword(prev => !prev);
         }
     return (
-        <>
+        <div className="flex flex-col gap-5 w-xs">
             <div className="relative">
-                <label className="mr-4 text-sm font-semibold text-gray-600">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
                     Username 
                 </label>
                 <input 
@@ -130,65 +130,96 @@ const SignupForm = () => {
                 name="username" 
                 placeholder="Enter username" 
                 value={form.username}
-                className={`py-2 px-8 outline-1  rounded-lg min-w-full mt-2 text-sm pb-3 ${errors.username ? "outline-red-500": "outline-gray-800" } active:bg-blue-200`}
+                className={`py-2.5 px-4 rounded-lg min-w-full text-sm border-2 transition-all duration-200 ${
+                    errors.username 
+                    ? "border-red-400 focus:border-red-500 focus:ring-2 focus:ring-red-200" 
+                    : "border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                } outline-none`}
                 onChange = {(e) => handleSetUsername(e)}
                 />
                 {
-                    errors.username && <p className="absolute text-red-600 text-xs pt-1">{errors.username}</p>
+                    errors.username && (
+                        <p className="text-red-500 text-xs mt-1.5 flex items-center gap-1">
+                            <span className="inline-block w-1 h-1 bg-red-500 rounded-full"></span>
+                            {errors.username}
+                        </p>
+                    )
                 }
             </div>
             <div className="relative">
-                <label className="mr-4 text-sm font-semibold text-gray-600">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
                     E-mail 
                 </label>
                 <input 
-                type="text" 
+                type="email" 
                 name="mail" 
-                placeholder="Enter mail" 
+                placeholder="Enter email" 
                 value={form.email}
-                className={`py-2 px-8 outline-1 outline-gray-800 rounded-lg min-w-full mt-2 text-md pb-3 text-sm ${errors.email ? "outline-red-500": "outline-gray-800" }`}
+                className={`py-2.5 px-4 rounded-lg w-full text-sm border-2 transition-all duration-200 ${
+                    errors.email 
+                    ? "border-red-400 focus:border-red-500 focus:ring-2 focus:ring-red-200" 
+                    : "border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                } outline-none`}
                 onChange = {(e) => handleSetEmail(e)}
                 />
                 {
-                    errors.email && <p className="absolute text-red-600 text-xs pt-1">{errors.email}</p>
+                    errors.email && (
+                        <p className="text-red-500 text-xs mt-1.5 flex items-center gap-1">
+                            <span className="inline-block w-1 h-1 bg-red-500 rounded-full"></span>
+                            {errors.email}
+                        </p>
+                    )
                 }
             </div>
             <div className="relative">
-                <label className="mr-4 text-sm font-semibold text-gray-600">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
                     Password 
                 </label>
-                <input 
-                type={eyePassword ? "password" : "text"}
-                name="password" 
-                value={form.password}
-                placeholder="Enter password" 
-                className={`py-2 px-8 outline-1 rounded-lg min-w-full mt-2 text-sm ${errors.password ? "outline-red-500": "outline-gray-800" }`}
-                onChange = {(e) => handleSetPassword(e)}
-                />
-                {
-                    !eyePassword ? (
-                    <EyeIcon 
-                    className="absolute top-10 right-1 cursor-pointer text-gray-500 h-4"
-                    onClick={handleEyeClick}
+                <div className="relative">
+                    <input 
+                    type={eyePassword ? "password" : "text"}
+                    name="password" 
+                    value={form.password}
+                    placeholder="Enter password" 
+                    className={`py-2.5 px-4 pr-10 rounded-lg w-full text-sm border-2 transition-all duration-200 ${
+                        errors.password 
+                        ? "border-red-400 focus:border-red-500 focus:ring-2 focus:ring-red-200" 
+                        : "border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                    } outline-none`}
+                    onChange = {(e) => handleSetPassword(e)}
                     />
-                    ):
-                    <EyeOffIcon 
-                    className="absolute top-10 right-1 cursor-pointer text-gray-500 h-4"
-                    onClick={handleEyeClick}
-                    />
-                }
+                    <button
+                        type="button"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                        onClick={handleEyeClick}
+                        aria-label={eyePassword ? "Show password" : "Hide password"}
+                    >
+                        {!eyePassword ? (
+                            <EyeIcon className="h-5 w-5" />
+                        ) : (
+                            <EyeOffIcon className="h-5 w-5" />
+                        )}
+                    </button>
+                </div>
                 {
-                    errors.password && <p className="absolute text-red-600 text-xs pt-1">{errors.password}</p>
+                    errors.password && (
+                        <p className="text-red-500 text-xs mt-1.5 flex items-center gap-1">
+                            <span className="inline-block w-1 h-1 bg-red-500 rounded-full"></span>
+                            {errors.password}
+                        </p>
+                    )
                 }
             </div>
             <button 
-            className="px-8 py-2 rounded-full transition-all duration-200 font-medium bg-blue-600 text-white cursor-pointer mt-4 text-md hover:outline-gray-300 hover:outline-4"
+            className="w-full py-2.5 rounded-lg transition-all duration-200 font-semibold bg-blue-600 text-white cursor-pointer mt-2 text-sm hover:bg-blue-700 hover:shadow-lg active:scale-[0.98]"
             onClick={() => handleSubmit()}
             >
-                Register
+                Create Account
             </button>
-            <p className="text-sm">Already have account? <Link href="/login" className="text-blue-500 hover:text-blue-400">Login</Link></p>
-        </>
+            <p className="text-sm text-gray-600 text-center">
+                Already have an account? <Link href="/login" className="text-blue-600 font-medium hover:text-blue-700 hover:underline transition-colors">Log in</Link>
+            </p>
+        </div>
     );
 }
 

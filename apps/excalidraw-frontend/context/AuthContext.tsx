@@ -13,13 +13,13 @@ export const AuthContext = createContext({
     register: (data: Form) => {},
     login: (data: loginData) => {},
     logout: () => {},
-    loading: false
+    loading: true
 });
 
 const AuthProvider = ({children} : {children: ReactNode}) => {
     const [user, setUser] = useState(null);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
-    const [loading, setLoading] = useState<boolean>(false);
+    const [loading, setLoading] = useState<boolean>(true);
     const router = useRouter();
 
     useEffect(() => {
@@ -72,12 +72,14 @@ const AuthProvider = ({children} : {children: ReactNode}) => {
             setUser(res);
             localStorage.setItem("access_token", res.token);
             setIsAuthenticated(true);
-            setLoading(false);
             router.replace("/canvas/");
         }
         catch(ex) {
-
+            
             console.log(ex);
+        }
+        finally{
+            setLoading(false);
         }
     }
 

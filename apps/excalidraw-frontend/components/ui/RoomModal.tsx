@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X, Users, Lock, Globe, Copy, Check } from 'lucide-react';
 import { createRoom } from '@/lib/api';
+import { useRouter } from 'next/navigation';
 
 export default function RoomModal({setIsModal}: { setIsModal: React.Dispatch<React.SetStateAction<boolean>>}) {
   const [isOpen, setIsOpen] = useState(true);
@@ -8,7 +9,8 @@ export default function RoomModal({setIsModal}: { setIsModal: React.Dispatch<Rea
   const [isPrivate, setIsPrivate] = useState(false);
   const [copied, setCopied] = useState(false);
   const [roomCreated, setRoomCreated] = useState(false);
-  const generatedLink = 'https://sketchflow.app/room/abc-xyz-123';
+  const generatedLink = `http://localhost:3000/canvas/${roomName}`;
+  const router = useRouter();
 
   const handleCreate = async () => {
     if (roomName.trim()) {
@@ -221,7 +223,10 @@ export default function RoomModal({setIsModal}: { setIsModal: React.Dispatch<Rea
 
             {/* Enter Room Button */}
             <button
-              onClick={() => setIsModal(false)}
+              onClick={() => {
+                setIsModal(false);
+                router.push(generatedLink);
+              }}
               className="w-full px-6 py-3 bg-gray-900 text-white rounded-lg font-medium hover:bg-gray-800 transition-colors"
             >
               Enter Room
