@@ -238,7 +238,6 @@ export class Canvas {
            ctx.scale(this.scale, this.scale);
 
            this.drawShapes();
-           console.log(this.existingShapes);
     }   
 
 

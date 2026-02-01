@@ -10,9 +10,10 @@
   },
   "keywords": [],
   "dependencies": {
-    "@repo/typescript-config": "workspace:*",
+    "@prisma/client": "^6.16.3",
     "@repo/backend-common": "workspace:*",
     "@repo/db": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.18.2",
     "ws": "^8.18.3"

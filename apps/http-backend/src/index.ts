@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { raw } from 'express';
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import { REFRESH_JWT_SECRET, ACCESS_JWT_SECRET } from '@repo/backend-common/config';
 import { CreateRoomSchema, SigninUserSchema, SignupUserSchema} from "@repo/common/zod";
@@ -8,6 +8,13 @@ import bcrypt from 'bcrypt';
 import { AuthRequest, Room } from './types';
 import cookieParser from "cookie-parser";
 import cors from 'cors';
+import crypto from "crypto";
+import dotenv from "dotenv";
+import nodemailer from "nodemailer";
+
+dotenv.config();
+
+console.log(process.env.RESEND_API_KEY);
 
 const app = express();
 
@@ -172,7 +179,6 @@ app.post("/signin", async (req, res) => {
 });
 
 app.get("/refresh", async (req:AuthRequest, res) => {
-    console.log(req.cookies);
 
     const token = req.cookies.refresh_token;
     if(!token){
@@ -182,19 +188,16 @@ app.get("/refresh", async (req:AuthRequest, res) => {
         return;
     }
 
-    console.log("yellow1");
     let userId;
     try {
         const decoded = await jwt.verify(token, REFRESH_JWT_SECRET) as JwtPayload;
         userId = decoded.userId;
     }
     catch(ex) {
-        console.log(ex);
         return res.status(401).json({
             message: "Unauthorized"
         });
     }
-    console.log("yellow2");
     
     const oldSession = await prismaClient.session.findFirst({
         where: {
@@ -207,13 +210,10 @@ app.get("/refresh", async (req:AuthRequest, res) => {
     });
     
     if(!oldSession) {
-        console.log("yellow inbetween");
         return res.status(401).json({
             message: "failed"
         });
     }
-    console.log("yellow3");
-
     prismaClient.session.update({
         where: {
             id: oldSession.id
@@ -260,17 +260,19 @@ app.get("/refresh", async (req:AuthRequest, res) => {
         }
     });
 
-    console.log("yellow");
-
     res.status(200).json({
         token: accessToken
     });
 });
 
-app.get("/room/:slug", async (req, res) => {
+app.get("/room/:adminId/:slug", async (req, res) => {
+    const adminId = req.params.adminId;
     const slug: string = req.params.slug;
     const room = await prismaClient.room.findFirst({
-        where: {slug} as any
+        where: {
+            slug,
+            adminId
+        }
     });
 
 
@@ -319,11 +321,11 @@ app.get("/chat/:roomId", async (req, res) => {
 });
 
 app.get("/chat/user/:userId", async (req, res) => {
-    const userId: number = Number(req.params.userId);
-    const messages = await prismaClient.message.findFirst({
+    const userId = req.params.userId;
+    const messages = await prismaClient.message.findMany({
         where: {
-            id: userId,
-            roomId: undefined
+            userId: userId,
+            roomId: null
         }
     });
 
@@ -350,7 +352,19 @@ app.post("/create-room", protect, async (req: AuthRequest, res) => {
         });
         return;
     }
-    await prismaClient.room.create({
+
+    const hasRoom = await prismaClient.room.findFirst({
+        where: {
+            slug
+        }
+    });
+
+    if(hasRoom) {
+        return res.status(400).json({
+            message: "Room already exist."
+        });
+    }
+    const room = await prismaClient.room.create({
         data: {
             slug,
             adminId: userId
@@ -358,7 +372,8 @@ app.post("/create-room", protect, async (req: AuthRequest, res) => {
     });
 
     res.status(201).json({
-        message: "Room is created"
+        message: "Room is created",
+        room
     });
 })
 
@@ -371,11 +386,11 @@ app.get("/rooms", async (req, res) => {
 
 app.post("/canvas/:userId", async (req, res) => {
     const userId = req.params.userId;
-    const { canvas } = req.body;
-    const message = await prismaClient.message.create({
+    const canvas  = req.body;
+    await prismaClient.message.create({
         data: {
             userId,
-            message: canvas
+            message: JSON.stringify(canvas)
         }
     });
 
@@ -411,6 +426,137 @@ app.post("/logout", async (req, res) => {
         message: "Logout successfully"
     })
 })
+
+app.post("/forgot-password", async (req, res) => {
+    const { email } = req.body;
+    const user = await prismaClient.user.findFirst({
+        where: {
+            email
+        }
+    });
+
+    console.log(user);
+
+    if(!user) {
+        return res.status(400).json({
+            message: "User doesn't exist."
+        });
+    }
+
+    console.log(process.env.GMAIL_USER);
+    console.log(process.env.GMAIL_APP_PASSWORD);
+    
+    const transporter = nodemailer.createTransport({
+      host: "smtp.gmail.com",
+      port: 587,
+      secure: false, 
+      auth: {
+        user: process.env.GMAIL_USER,
+        pass: process.env.GMAIL_APP_PASSWORD
+      }
+    });
+
+
+    const rawToken = crypto.randomBytes(32).toString("base64url");
+
+    const tokenHash = crypto
+      .createHash("sha256")
+      .update(rawToken)
+      .digest("hex");
+
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
+
+    await prismaClient.user.update({
+        where: {
+            id: user.id
+        },
+        data: {
+            passwordResetToken: tokenHash,
+            passwordResetExpires: expiresAt
+        }
+    });
+
+    const resetLink = `http://localhost:3000/reset-password?token=${rawToken}`;
+
+    await transporter.sendMail({
+      from: `"Your App" <${process.env.GMAIL_USER}>`,
+      to: email,
+      subject: "Reset your password",
+      text: `Reset link: ${resetLink}`
+    });
+
+    return res.status(200).json({
+        message: "If user exist with this email, link is sent."
+    })
+
+})
+
+app.post("/reset-password", async (req, res) => {
+    const { token, password} = req.body;
+
+    const tokenHash = crypto
+      .createHash("sha256")
+      .update(token)
+      .digest("hex");
+    const user = await prismaClient.user.findFirst({
+        where: {
+            passwordResetToken: tokenHash,
+            passwordResetExpires: {
+                gte: new Date(Date.now())
+            }
+        }
+    });
+
+    if(!user) {
+        return res.status(400).json({
+            message: "Token expired."
+        });
+    }
+
+    await prismaClient.user.update({
+        where: {
+            id: user.id
+        },
+        data: {
+            password
+        }
+    });
+
+    const refreshToken = jwt.sign({userId:user.id}, REFRESH_JWT_SECRET, {
+        expiresIn: '7d'
+    });
+    
+    const accessToken = jwt.sign({userId:user.id}, ACCESS_JWT_SECRET, {
+        expiresIn: '24h'
+    });
+
+    res.cookie("refresh_token", refreshToken, {
+      httpOnly: true,
+        //   secure: true,
+        //   sameSite: "strict",
+          maxAge: 7 * 24 * 60 * 60 * 1000
+    });
+
+    res.cookie("access_token", accessToken, {
+        httpOnly: true,
+        maxAge: 24*60*60 * 1000 
+    });
+
+    await prismaClient.session.create({
+        data: {
+            token: refreshToken,
+            userId: user.id,
+            createdAt: new Date(),
+            expiresAt: new Date(Date.now() + 7*24*60*60*1000)
+        }
+    });
+
+    res.status(200).json({
+        token: accessToken,
+        username: user.name,
+        email: user.email
+    });
+});
 
 
 app.listen(3001);

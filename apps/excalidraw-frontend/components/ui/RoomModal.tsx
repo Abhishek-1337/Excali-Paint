@@ -9,13 +9,14 @@ export default function RoomModal({setIsModal}: { setIsModal: React.Dispatch<Rea
   const [isPrivate, setIsPrivate] = useState(false);
   const [copied, setCopied] = useState(false);
   const [roomCreated, setRoomCreated] = useState(false);
-  const generatedLink = `http://localhost:3000/canvas/${roomName}`;
+  const [generatedLink, setGeneratedLink] = useState<string>("");
   const router = useRouter();
 
   const handleCreate = async () => {
     if (roomName.trim()) {
       try {
-        await createRoom(roomName);
+        const room = await createRoom(roomName);
+        setGeneratedLink(`http://localhost:3000/canvas/${room.id}`);
         setRoomCreated(true);
       }
       catch(ex) {

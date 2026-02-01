@@ -4,10 +4,9 @@ export default function proxy (req: NextRequest) {
     const token = req.cookies.get("refresh_token")?.value;
     const { pathname } = req.nextUrl;
 
-    const publicRoutes = ["/login", "/register"];
-
+    const publicRoutes = ["/login", "/register", "/forget-password", "/reset-password", "/"];
     const isPublicRoute = publicRoutes.some(route =>
-      pathname.startsWith(route)
+      pathname === route
     );
 
     if (isPublicRoute && token) {
@@ -15,7 +14,6 @@ export default function proxy (req: NextRequest) {
     }
 
     if (!isPublicRoute && !token) {
-      console.log("fuck");
       return NextResponse.redirect(new URL("/login", req.url));
     }
 

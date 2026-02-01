@@ -44,7 +44,6 @@ const Room = ({ roomId, userId }: {roomId?: string, userId?: string}) => {
             setCanvas(g);
         }
         else{
-            console.log(canva);
             g = new Canvas(canva, null, null, userId ? userId : null);
             setCanvas(g);
         }

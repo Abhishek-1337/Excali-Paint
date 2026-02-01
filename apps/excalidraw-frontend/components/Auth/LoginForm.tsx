@@ -25,6 +25,7 @@ const LoginForm = () => {
     const [form, setForm] = useState<Form>(INITIAL_DATA);
         const [errors, setErrors] = useState<Error>({});
         const [eyePassword, setEyePassword] = useState(true);
+        const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
         const router = useRouter();
         const { login, isAuthenticated } = useAuthContext();
 
@@ -82,6 +83,7 @@ const LoginForm = () => {
             });
         }
         const handleSubmit = async () => {
+            setIsSubmitting(true);
             const errors = validateErrors();
             if(Object.keys(errors).length > 0) {
                 console.log(errors);
@@ -93,9 +95,10 @@ const LoginForm = () => {
                 });
                 return;
             }
-
+            
             try{
-                login(form);
+                
+                await login(form);
                 // const res = await LoginUser(form);
                 // localStorage.setItem("token", res.token);
                 setForm(INITIAL_DATA);
@@ -104,6 +107,7 @@ const LoginForm = () => {
                 console.log(ex);
             }
             finally{
+                setIsSubmitting(false);
             }
         }
     return (
@@ -177,10 +181,41 @@ const LoginForm = () => {
             className="w-full py-2.5 rounded-lg transition-all duration-200 font-semibold bg-blue-600 text-white cursor-pointer mt-2 text-sm hover:bg-blue-700 hover:shadow-lg active:scale-[0.98]"
             onClick={() => handleSubmit()}
             >
-                Sign In
+                {isSubmitting ? (
+                <span className="flex items-center justify-center gap-2">
+                  <svg
+                    className="animate-spin h-5 w-5 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                  Signing in...
+                </span>
+              ) : (
+                "Sign in"
+              )}
             </button>
             <p className="text-sm text-gray-600 text-center">
                 Don't have an account? <Link href="/register" className="text-blue-600 font-medium hover:text-blue-700 hover:underline transition-colors">Sign up</Link>
+            </p>
+            <p className="text-sm text-gray-600 text-center">
+                <Link href="/forget-password" className="text-blue-600 font-medium hover:text-blue-700 hover:underline transition-colors">
+                    Forget your password?
+                </Link>
             </p>
         </div>
     );

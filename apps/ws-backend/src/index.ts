@@ -14,29 +14,23 @@ interface UserRoomType {
 const userRoom: UserRoomType[] = [];
 
 wss.on('connection', async function connection(ws, request) {
-  console.log("request");
   const url = request.url;
   if(!url) {
     ws.close();
     return;
   }
-
-
+  
   const token = request.headers["sec-websocket-protocol"]
   ?.split(",")[1]
   ?.trim();
 
-  console.log(token);
-  
   if(!token){
     ws.close();
     return;
   }
 
   const decoded = await jwt.verify(token, ACCESS_JWT_SECRET);
-  console.log(decoded);
   const userId = (decoded as JwtPayload).userId;
-  console.log(userId);
   if(!decoded || !userId){
     ws.close();
     return;
@@ -52,14 +46,11 @@ wss.on('connection', async function connection(ws, request) {
 
   ws.on('message', async function message(data) {
     const parsedData = JSON.parse(data.toString());
-    console.log('received: %s', parsedData);
       if(parsedData.type === "join-room"){
-        console.log("joined");
-        // const user = userRoom.find((ur) => ur.userId == userId);
 
-        userRoom.forEach((userRoom ) => {
-          if(userRoom.userId === userId) {
-            userRoom?.rooms.push(parsedData.roomId);
+        userRoom.forEach((ur ) => {
+          if(ur.userId === userId) {
+            ur.rooms.push(parsedData.roomId);
           }
         })
       }

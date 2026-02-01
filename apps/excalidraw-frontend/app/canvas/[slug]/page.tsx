@@ -1,10 +1,10 @@
 import Room from "@/components/Room";
 
-const Root = async ({params}: {params: Promise<{slug: string}>}) => {
+const Root = async ({params}: {params: Promise<{roomId: string}>}) => {
     const awaitedParams = await params;
-   
+
     return (
-        <Room slug = {awaitedParams.slug}/>
+        <Room roomId = {awaitedParams.roomId}/>
     );
 };
 

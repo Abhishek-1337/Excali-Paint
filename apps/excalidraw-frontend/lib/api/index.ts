@@ -111,3 +111,13 @@ export const getRoom = async (slug: string) => {
   const res = await apiClient.get(`room/${slug}`);
   return res.data;
 }
+
+export const forgotPassword = async (email: string) => {
+  const res = await apiClient.post("/forgot-password", { email });
+  return res.data;
+}
+
+export const resetPassword = async (data: { token: string, newPassword: string, confirmPassword: string}) => {
+  const res = await apiClient.post("/reset-password", data);
+  return res.data;
+}

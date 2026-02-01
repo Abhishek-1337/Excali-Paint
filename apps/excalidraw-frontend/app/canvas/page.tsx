@@ -5,7 +5,6 @@ import useAuthContext from "@/hooks/useAuthContext";
 
 const Root = () => {
     const { user, loading } = useAuthContext();
-    console.log(user);
     if(user === null && loading) {
         return (
             <>Loading...</>

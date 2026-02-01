@@ -22,6 +22,8 @@ model User {
   room      Room[]     @relation("RoomMembers")
   adminOf   Room[]    @relation("RoomAdmin")
   session  Session[]
+  passwordResetToken String?
+  passwordResetExpires DateTime?
 }
 
 model Room {
