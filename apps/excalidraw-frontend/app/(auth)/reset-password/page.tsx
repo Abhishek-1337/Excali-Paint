@@ -3,7 +3,7 @@
 import { resetPassword } from "@/lib/api";
 import { EyeIcon, EyeOffIcon } from "lucide-react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 
 type Form = {
@@ -29,8 +29,8 @@ const ResetPasswordPage = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
     const router = useRouter();
-    const searchParams = useSearchParams();
-    const token = searchParams.get('token'); // Get reset token from URL
+    const params = useParams();
+    const token = params.token as string; // Get reset token from URL
 
     if(!token) {
         router.push("/forget-password");
