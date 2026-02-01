@@ -4,7 +4,8 @@ import { resetPassword } from "@/lib/api";
 import { EyeIcon, EyeOffIcon } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useState } from "react";
+import { useState } from "react";
+import { Suspense } from "react";
 
 type Form = {
     password: string;
@@ -19,6 +20,15 @@ type Error = {
 const INITIAL_DATA: Form = {
     password: "",
     confirmPassword: ""
+}
+
+
+export default function ResetPassword() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <ResetPasswordPage />
+    </Suspense>
+  );
 }
 
 const ResetPasswordPage = () => {
@@ -156,8 +166,7 @@ const ResetPasswordPage = () => {
     }
 
     return (
-        <Suspense fallback={<div>Loading...</div>}>
-            <div className="flex items-center justify-center px-4">
+        <div className="flex items-center justify-center px-4">
             <div className="max-w-md w-xs">
                 <div className="flex flex-col gap-5">
                     {/* Header */}
@@ -360,9 +369,5 @@ const ResetPasswordPage = () => {
                 </div>
             </div>
         </div>
-        </Suspense>
-        
     );
 }
-
-export default ResetPasswordPage;
