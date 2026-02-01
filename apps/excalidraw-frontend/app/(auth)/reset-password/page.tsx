@@ -3,8 +3,8 @@
 import { resetPassword } from "@/lib/api";
 import { EyeIcon, EyeOffIcon } from "lucide-react";
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useState } from "react";
 
 type Form = {
     password: string;
@@ -29,8 +29,8 @@ const ResetPasswordPage = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
     const router = useRouter();
-    const params = useParams();
-    const token = params.token as string; // Get reset token from URL
+    const searchParams = useSearchParams();
+    const token = searchParams.get('token'); // Get reset token from URL
 
     if(!token) {
         router.push("/forget-password");
@@ -156,7 +156,8 @@ const ResetPasswordPage = () => {
     }
 
     return (
-        <div className="flex items-center justify-center px-4">
+        <Suspense fallback={<div>Loading...</div>}>
+            <div className="flex items-center justify-center px-4">
             <div className="max-w-md w-xs">
                 <div className="flex flex-col gap-5">
                     {/* Header */}
@@ -359,6 +360,8 @@ const ResetPasswordPage = () => {
                 </div>
             </div>
         </div>
+        </Suspense>
+        
     );
 }
 
