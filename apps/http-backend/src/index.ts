@@ -16,14 +16,24 @@ dotenv.config();
 
 const app = express();
 
-const corsOps = {
-    origin: [
-      process.env.DEV_ORIGIN || "",
-      process.env.PRODUCTION_ORIGIN || "",
-    ],
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-    credentials: (process.env.NODE_ENV === "production"),
+const allowedOrigins = [
+  process.env.DEV_ORIGIN,
+  process.env.PRODUCTION_ORIGIN,
+].filter(Boolean); 
+
+const corsOps: cors.CorsOptions = {
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+
+    return callback(new Error("Not allowed by CORS"));
+  },
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true, 
 };
 
 app.use(cors(corsOps));
