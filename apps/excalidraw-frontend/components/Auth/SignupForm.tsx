@@ -59,8 +59,6 @@ const SignupForm = () => {
             return errors;
         }
 
-        console.log(errors);
-
         const handleSetUsername = (e: React.ChangeEvent<HTMLInputElement>) => {
             setForm((prev) => {
                 return {
@@ -102,7 +100,6 @@ const SignupForm = () => {
             });
         }
         const handleSubmit = async () => {
-            setIsSubmitting(true);
             const errors = validateErrors();
             if(Object.keys(errors).length > 0) {
                 console.log(errors);
@@ -114,6 +111,7 @@ const SignupForm = () => {
                 });
                 return;
             }
+            setIsSubmitting(true);
             try{
                 register(form);
             }

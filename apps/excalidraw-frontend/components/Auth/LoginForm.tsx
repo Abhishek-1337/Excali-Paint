@@ -83,10 +83,8 @@ const LoginForm = () => {
             });
         }
         const handleSubmit = async () => {
-            setIsSubmitting(true);
             const errors = validateErrors();
             if(Object.keys(errors).length > 0) {
-                console.log(errors);
                 setErrors(prev => {
                     return {
                         ...prev,
@@ -95,12 +93,11 @@ const LoginForm = () => {
                 });
                 return;
             }
+            setIsSubmitting(true);
             
             try{
                 
                 await login(form);
-                // const res = await LoginUser(form);
-                // localStorage.setItem("token", res.token);
                 setForm(INITIAL_DATA);
             }
             catch(ex){
