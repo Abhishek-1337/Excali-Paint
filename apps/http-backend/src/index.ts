@@ -14,14 +14,19 @@ import nodemailer from "nodemailer";
 
 dotenv.config();
 
-console.log(process.env.RESEND_API_KEY);
-
 const app = express();
 
-app.use(cors({
-  origin: "http://localhost:3000", 
-  credentials: true
-}));
+const corsOps = {
+    origin: [
+      process.env.DEV_ORIGIN || "",
+      process.env.PRODUCTION_ORIGIN || "",
+    ],
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: (process.env.NODE_ENV === "production"),
+};
+
+app.use(cors(corsOps));
 
 app.use(express.json());
 app.use(cookieParser());
