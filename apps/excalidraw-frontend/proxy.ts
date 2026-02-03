@@ -4,9 +4,13 @@ export default function proxy (req: NextRequest) {
     const token = req.cookies.get("refresh_token")?.value;
     const { pathname } = req.nextUrl;
 
-    const publicRoutes = ["/login", "/register", "/forget-password", "/reset-password", "/"];
+    console.log(pathname);
+
+    const publicRoutes = ["/login", "/register", "/forget-password", "/reset-password"];
+
+    if(pathname === "/") return NextResponse.next();
     const isPublicRoute = publicRoutes.some(route =>
-      pathname === route
+      pathname.startsWith(route)
     );
 
     if (isPublicRoute && token) {
