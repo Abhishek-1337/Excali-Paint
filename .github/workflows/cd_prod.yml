@@ -1,18 +1,23 @@
 name: Continuous Deployment
+
 on:
   push:
-    branches: 
+    branches:
       - "main"
 
-jobs: 
+jobs:
   redeploying_everything:
-    name: "Deplopying every push"
+    name: "Deploying every push"
+    runs-on: ubuntu-latest   # ← REQUIRED
 
-    steps: 
+    steps:
       - run: |
-          echo ${{secrets.SSH_KEY}} &> ~/ssh_key
-          ssh -i ~/ssh_key ubuntu@ec2-3-238-142-128.compute-1.amazonaws.com
-          cd Excali-Paint && git pull
-          pnpm install
-          pnpm run build
-          pm2 restart ecosyste.config.js
+          echo "${{ secrets.SSH_KEY }}" > ~/ssh_key
+          chmod 600 ~/ssh_key
+          ssh -i ~/ssh_key ubuntu@ec2-3-238-142-128.compute-1.amazonaws.com << 'EOF'
+            cd Excali-Paint
+            git pull
+            pnpm install
+            pnpm run build
+            pm2 restart ecosystem.config.js
+          EOF
