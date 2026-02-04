@@ -17,6 +17,10 @@ jobs:
           echo "${{ secrets.SSH_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
           chmod 644 ~/.ssh/known_hosts
 
+      - name: Debug key format
+        run: |
+          ssh-keygen -lf ~/.ssh/id_rsa
+
       - name: Deploy
         run: |
           ssh -T ubuntu@ec2-3-238-142-128.compute-1.amazonaws.com << 'EOF'
