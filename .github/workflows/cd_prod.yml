@@ -1,14 +1,18 @@
 name: Continuous Deployment
+
 on:
   push:
     branches: 
       - "main"
 
 jobs:
-  redeploying_everything:
+  deploy:
     runs-on: ubuntu-latest
-
+    
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Setup SSH
         run: |
           mkdir -p ~/.ssh
@@ -16,17 +20,44 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           echo "${{ secrets.SSH_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
           chmod 644 ~/.ssh/known_hosts
+          # Add to ssh-agent for better security
+          eval "$(ssh-agent -s)"
+          ssh-add ~/.ssh/id_rsa
 
-      - name: Debug key format
+      - name: Verify SSH Connection
         run: |
-          ssh-keygen -lf ~/.ssh/id_rsa
+          ssh -o StrictHostKeyChecking=yes -T ubuntu@${{ secrets.EC2_HOST }} exit
 
-      - name: Deploy
+      - name: Deploy to EC2
         run: |
-          ssh -T ubuntu@ec2-3-238-142-128.compute-1.amazonaws.com << 'EOF'
-            cd Excali-Paint
-            git pull
-            pnpm install
-            pnpm run build
-            pm2 restart ecosystem.config.js
+          ssh ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
+            set -e  # Exit on any error
+            
+            echo "Starting deployment..."
+            cd Excali-Paint || exit 1
+            
+            echo "Pulling latest changes..."
+            git pull origin main || exit 1
+            
+            echo "Installing dependencies..."
+            pnpm install --frozen-lockfile || exit 1
+            
+            echo "Building application..."
+            pnpm run build || exit 1
+            
+            echo "Restarting application..."
+            pm2 restart ecosystem.config.js --update-env || exit 1
+            
+            echo "Deployment completed successfully!"
           EOF
+
+      - name: Cleanup SSH Keys
+        if: always()
+        run: |
+          rm -f ~/.ssh/id_rsa
+          rm -f ~/.ssh/known_hosts
+
+      - name: Notify on Failure
+        if: failure()
+        run: |
+          echo "Deployment failed! Check the logs above for details."
