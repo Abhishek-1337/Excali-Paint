@@ -30,7 +30,7 @@ jobs:
 
       - name: Deploy to EC2
         run: |
-          ssh ubuntu@${{ secrets.EC2_HOST }} './deploy-excali-paint.sh'
+          ssh ubuntu@${{ secrets.EC2_HOST }} './deploy-excalipaint.sh'
 
       - name: Cleanup SSH Keys
         if: always()
