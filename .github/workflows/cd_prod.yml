@@ -30,26 +30,7 @@ jobs:
 
       - name: Deploy to EC2
         run: |
-          ssh ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
-            set -e  # Exit on any error
-            
-            echo "Starting deployment..."
-            cd Excali-Paint || exit 1
-            
-            echo "Pulling latest changes..."
-            git pull origin main || exit 1
-            
-            echo "Installing dependencies..."
-            pnpm install --frozen-lockfile || exit 1
-            
-            echo "Building application..."
-            pnpm run build || exit 1
-            
-            echo "Restarting application..."
-            pm2 restart ecosystem.config.js --update-env || exit 1
-            
-            echo "Deployment completed successfully!"
-          EOF
+          ssh ubuntu@${{ secrets.EC2_HOST }} './deploy-excali-paint.sh'
 
       - name: Cleanup SSH Keys
         if: always()
