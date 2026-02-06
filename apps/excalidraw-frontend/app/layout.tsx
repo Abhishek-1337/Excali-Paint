@@ -35,6 +35,8 @@ const geistMono = localFont({
 });
 import "./globals.css";
 import { Providers } from "./providers";
+import { ToastProvider } from "@/context/useToast";
+import { ToastContainer } from "@/components/ui/Toast";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -54,7 +56,10 @@ export default function RootLayout({
       <div className="min-h-screen text-gray-900">
       {/* Subtle background texture */}
       <Providers>
+        <ToastProvider>
         {children}
+        <ToastContainer/>
+        </ToastProvider>
       </Providers>
         
         </div>

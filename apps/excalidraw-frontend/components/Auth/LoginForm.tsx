@@ -1,5 +1,6 @@
 "use client";
 
+import useToast from "@/context/useToast";
 import useAuthContext from "@/hooks/useAuthContext";
 import { EyeIcon, EyeOffIcon} from "lucide-react";
 import Link from "next/link";
@@ -28,6 +29,7 @@ const LoginForm = () => {
         const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
         const router = useRouter();
         const { login, isAuthenticated } = useAuthContext();
+        const {addToast} = useToast();
 
         useEffect(() => {
           if (isAuthenticated) {
@@ -40,16 +42,12 @@ const LoginForm = () => {
             if(!form.username.trim()) {
                 errors.username = "Username can't be empty.";
             }
-            else if(form.username.length < 3) {
-                errors.username = "Username should have atleast 3 characters.";
-            }
+
     
             if(!form.password.trim()) {
                 errors.password = "Password can't be empty";
             }
-            else if(form.password.length < 8 ) {
-                errors.password = "Password should be atleast 8 character long.";
-            }
+
     
             return errors;
         }
@@ -100,8 +98,9 @@ const LoginForm = () => {
                 await login(form);
                 setForm(INITIAL_DATA);
             }
-            catch(ex){
-                console.log(ex);
+            catch(ex: unknown){
+                //@ts-ignore
+                addToast(ex?.response?.data?.message as any, "error");
             }
             finally{
                 setIsSubmitting(false);

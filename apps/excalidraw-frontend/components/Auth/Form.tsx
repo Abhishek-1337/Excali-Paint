@@ -58,7 +58,6 @@ const Form = () => {
             return errors;
         }
 
-        console.log(errors);
 
         const handleSetUsername = (e: React.ChangeEvent<HTMLInputElement>) => {
             setForm((prev) => {

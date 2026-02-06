@@ -69,7 +69,6 @@ app.post("/signup", async (req, res) => {
     const user = await prismaClient.user.create({
         data: { name, email, password:hashedPassword }
     });
-    console.log(user);
 
     const refreshToken = jwt.sign({userId: user.id}, REFRESH_JWT_SECRET,{
         expiresIn: "7d"

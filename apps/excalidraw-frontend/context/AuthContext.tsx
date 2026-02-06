@@ -36,7 +36,6 @@ const AuthProvider = ({children} : {children: ReactNode}) => {
 
             }
             catch(ex) {
-                console.log(ex);
             }
         }
 
@@ -45,24 +44,17 @@ const AuthProvider = ({children} : {children: ReactNode}) => {
 
     const register = async (form: Form) => {
         setLoading(true);
-        try{
-            const res = await RegisterUser(form);
-            setUser(res);
-            localStorage.setItem("access_token", res.token);
-            setIsAuthenticated(true);
-            router.replace("/canvas/1");
-            setLoading(false);
-        }
-        catch(ex){
-            console.log(ex);
-        }
-        finally{
-        }
+        const res = await RegisterUser(form);
+        setUser(res);
+        localStorage.setItem("access_token", res.token);
+        setIsAuthenticated(true);
+        router.replace("/canvas");
+        setLoading(false);
+
     }
 
     const login = async (data: loginData)=> {
         setLoading(true);
-        try{
             const reqData = {
                 name: data.username,
                 password: data.password
@@ -73,25 +65,13 @@ const AuthProvider = ({children} : {children: ReactNode}) => {
             localStorage.setItem("access_token", res.token);
             setIsAuthenticated(true);
             router.replace("/canvas/");
-        }
-        catch(ex) {
-            
-            console.log(ex);
-        }
-        finally{
             setLoading(false);
-        }
     }
 
     const logout = async () => {
-        try {
             await logoutUser();
             localStorage.removeItem("access_token");
             router.replace("/login");
-        }
-        catch(ex) {
-            console.log(ex);
-        }
     }
 
     const value = useMemo(() => {

@@ -1,12 +1,12 @@
 "use client";
 
+import useToast from "@/context/useToast";
 import useAuthContext from "@/hooks/useAuthContext";
-import { RegisterUser } from "@/lib/api";
 import { Form } from "@/types/types";
 import { EyeIcon, EyeOffIcon } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useRef, useState } from "react";
+import {  useState } from "react";
 
 type Error = {
     username?: string;
@@ -30,6 +30,7 @@ const SignupForm = () => {
     const [errors, setErrors] = useState<Error>({});
     const [eyePassword, setEyePassword] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const { addToast } = useToast();
     const { register } = useAuthContext();
     
         const router = useRouter();
@@ -102,7 +103,6 @@ const SignupForm = () => {
         const handleSubmit = async () => {
             const errors = validateErrors();
             if(Object.keys(errors).length > 0) {
-                console.log(errors);
                 setErrors(prev => {
                     return {
                         ...prev,
@@ -116,7 +116,8 @@ const SignupForm = () => {
                 register(form);
             }
             catch(ex) {
-
+                //@ts-ignore
+                addToast(ex.response.data.message, "error");
             }
             finally{
                 setIsSubmitting(true);

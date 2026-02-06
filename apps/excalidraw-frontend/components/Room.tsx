@@ -6,6 +6,7 @@ import { Canvas } from "@/draw/Canvas";
 import { CircleIcon, SquareIcon, PencilIcon, UserRoundMinus, SettingsIcon, LogOut, PlusSquare } from "lucide-react";
 import useAuthContext from "@/hooks/useAuthContext";
 import RoomModal from "./ui/RoomModal";
+import useToast from "@/context/useToast";
 
 const Room = ({ roomId, userId }: {roomId?: string, userId?: string}) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -15,6 +16,7 @@ const Room = ({ roomId, userId }: {roomId?: string, userId?: string}) => {
     const [isModal, setIsModal] = useState(false);
     const [activeShape, setActiveShape] = useState<string>("pen");
     const { logout } = useAuthContext();
+    const { addToast } = useToast();
 
     useEffect(() => {
         const token = localStorage.getItem("access_token");
@@ -56,7 +58,13 @@ const Room = ({ roomId, userId }: {roomId?: string, userId?: string}) => {
 
     const handleLogout = async () => {
         setLogoutLoading(true);
-        logout();
+        try {
+            logout();
+        }
+        catch(ex) {
+            //@ts-ignore
+            addToast(ex?.response.data.message, "error");
+        }
         setLogoutLoading(false);
     }
 
