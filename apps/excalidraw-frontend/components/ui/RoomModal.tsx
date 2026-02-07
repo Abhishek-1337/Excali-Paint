@@ -107,12 +107,14 @@ export default function RoomModal({setIsModal}: { setIsModal: React.Dispatch<Rea
 
                 <button
                   onClick={() => setIsPrivate(true)}
-                  className={`w-full p-4 border-2 rounded-lg text-left transition-all ${
+                  className={`w-full p-4 border-2 text-green-400 rounded-lg text-left transition-all ${
                     isPrivate
                       ? 'border-gray-900 bg-gray-50'
                       : 'border-gray-200 hover:border-gray-300'
                   }`}
+                  disabled={true}
                 >
+                  This will soon be implemented
                   <div className="flex items-start space-x-3">
                     <div className={`w-5 h-5 rounded-full border-2 mt-0.5 flex items-center justify-center ${
                       isPrivate ? 'border-gray-900' : 'border-gray-300'
@@ -123,8 +125,8 @@ export default function RoomModal({setIsModal}: { setIsModal: React.Dispatch<Rea
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center space-x-2">
-                        <Lock className="w-4 h-4" strokeWidth={2.5} />
-                        <span className="font-medium">Private</span>
+                        <Lock className="w-4 h-4 text-black" strokeWidth={2.5} />
+                        <span className="font-medium text-black">Private</span>
                       </div>
                       <p className="text-sm text-gray-600 mt-1">
                         Requires password to access
